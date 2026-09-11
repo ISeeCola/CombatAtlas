@@ -3,12 +3,10 @@ Option Explicit
 
 Public Sub ApproveIntoMainWorkbook()
     On Error GoTo Failed
-    Dim sheet As Worksheet
-    Set sheet = ThisWorkbook.Worksheets("待审批文章")
     ThisWorkbook.Save
     Dim scriptPath As String
     scriptPath = ThisWorkbook.Path & "\..\scripts\promote-approved.ps1"
-    If Dir(scriptPath) = "" Then Err.Raise vbObjectError + 200, , "找不到迁移脚本：" & scriptPath
+    If Dir(scriptPath) = "" Then Err.Raise vbObjectError + 200, , "Promotion script not found: " & scriptPath
     Dim shell As Object, process As Object, command As String
     Set shell = CreateObject("WScript.Shell")
     command = "powershell.exe -NoProfile -ExecutionPolicy Bypass -File """ & scriptPath & """ -ReviewPath """ & ThisWorkbook.FullName & """"
@@ -20,8 +18,8 @@ Public Sub ApproveIntoMainWorkbook()
     Dim output As String
     output = Trim(process.StdOut.ReadAll & vbCrLf & process.StdErr.ReadAll)
     If process.ExitCode <> 0 Then Err.Raise vbObjectError + 201, , output
-    MsgBox output, vbInformation, "CombatAtlas 批准入库"
+    MsgBox output, vbInformation, "CombatAtlas promotion completed"
     Exit Sub
 Failed:
-    MsgBox Err.Description, vbCritical, "CombatAtlas 迁移失败"
+    MsgBox Err.Description, vbCritical, "CombatAtlas promotion failed"
 End Sub

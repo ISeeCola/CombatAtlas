@@ -1,8 +1,9 @@
-param(
+﻿param(
   [string]$ReviewPath = (Join-Path (Split-Path $PSScriptRoot -Parent) 'source\combat_atlas_review.xlsm'),
   [string]$MainPath = (Join-Path (Split-Path $PSScriptRoot -Parent) 'source\combat_atlas_main.xlsm')
 )
 $ErrorActionPreference = 'Stop'
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 $root = Split-Path $PSScriptRoot -Parent
 $pendingDir = Join-Path $root 'automation\pending'
 New-Item -ItemType Directory -Force -Path $pendingDir | Out-Null
