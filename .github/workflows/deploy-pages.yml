@@ -1,0 +1,53 @@
+name: Deploy CombatAtlas to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Verify generated source data
+        run: npm run sources:verify-generated
+      - name: Lint
+        run: npm run lint
+      - name: Build static site
+        run: npm run build
+      - name: Prepare GitHub Pages artifact
+        run: |
+          mkdir -p _site
+          cp -R dist/client/CombatAtlas/. _site/
+          find dist/client -maxdepth 1 -type f -exec cp {} _site/ \;
+          touch _site/.nojekyll
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4

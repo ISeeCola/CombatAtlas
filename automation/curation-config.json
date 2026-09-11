@@ -1,0 +1,35 @@
+{
+  "version": 2,
+  "timezone": "Asia/Hong_Kong",
+  "defaultSchedule": "daily-09:00",
+  "queries": [
+    "combat design game feel character controller site:gdcvault.com",
+    "enemy AI boss encounter design site:cedec.cesa.or.jp",
+    "动作游戏 战斗设计 怪物 AI 打击感",
+    "战斗策划 角色技能 资源循环 遭遇战"
+  ],
+  "watchSources": [
+    "https://www.youtube.com/@sora_sakurai_en",
+    "https://www.gdcvault.com/",
+    "https://cedec.cesa.or.jp/",
+    "https://gamemakerstoolkit.com/",
+    "https://design.jskyzero.com/",
+    "https://gwb.tencent.com/",
+    "https://www.gameres.com/",
+    "https://www.gcores.com/"
+  ],
+  "dailyLimit": 3,
+  "paths": {
+    "mainWorkbook": "source/combat_atlas_main.xlsm",
+    "reviewWorkbook": "source/combat_atlas_review.xlsm",
+    "registry": "../docs/research/curated-game-design/registry.json",
+    "pending": "automation/pending"
+  },
+  "policy": {
+    "preferred": ["开发者本人复盘", "官方会议演讲", "官方技术博客", "学术论文", "出版社书目"],
+    "secondary": ["署名清晰的专业拆解", "公开课转录", "行业媒体访谈"],
+    "reject": ["无作者聚合页", "洗稿", "只有观点没有案例", "无法找到原始出处"],
+    "dedupeKeys": ["canonicalUrl", "normalizedTitle", "speakerAndEvent"],
+    "copyright": "仅保存元数据、自写摘要与短评，不镜像全文、图片或付费内容"
+  }
+}

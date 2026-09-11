@@ -1,0 +1,946 @@
+{
+  "schemaVersion": 1,
+  "records": [
+    {
+      "publicationStatus": "published",
+      "id": "sakurai-risk-reward",
+      "title": "风险与回报",
+      "originalTitle": "Risk and Reward",
+      "author": "樱井政博",
+      "publisher": "Masahiro Sakurai on Creating Games",
+      "url": "https://www.youtube.com/watch?v=FXqEykD5Ub4",
+      "year": 2022,
+      "language": "英文",
+      "medium": "视频",
+      "tier": "一手",
+      "topics": [
+        "基础理论",
+        "玩法规则",
+        "反馈"
+      ],
+      "summary": "用“承担风险—获得回报”的推拉关系解释游戏性，是建立招式收益、资源投入和局内抉择的轻量入口。",
+      "takeaways": [
+        "先定义玩家承担的风险，再决定奖励强度",
+        "让高收益行为暴露可感知、可学习的代价",
+        "用风险结构而不是纯数值制造选择"
+      ],
+      "readingTime": 3,
+      "curatorScore": 5,
+      "featured": true,
+      "addedAt": "2026-09-09"
+    },
+    {
+      "publicationStatus": "published",
+      "id": "sakurai-tutorials",
+      "title": "让教学自然发生",
+      "originalTitle": "Making Tutorials Feel Natural",
+      "author": "樱井政博",
+      "publisher": "Masahiro Sakurai on Creating Games",
+      "url": "https://www.youtube.com/watch?v=Xz53DEwuAcU",
+      "year": 2023,
+      "language": "英文",
+      "medium": "视频",
+      "tier": "一手",
+      "topics": [
+        "教学",
+        "玩法规则",
+        "可读性"
+      ],
+      "summary": "把操作教学嵌入玩家推进过程，让理解规则与获得进展同时发生，适合规划角色能力、怪物考题与关卡节奏。",
+      "takeaways": [
+        "教学目标必须和当下行动目标一致",
+        "先给安全验证，再加入压力与组合条件",
+        "用实际成功反馈替代说明文字堆叠"
+      ],
+      "readingTime": 4,
+      "curatorScore": 4,
+      "featured": false,
+      "addedAt": "2026-09-09"
+    },
+    {
+      "publicationStatus": "published",
+      "id": "gow-evolving-combat",
+      "title": "新视角下的《战神》战斗进化",
+      "originalTitle": "Evolving Combat in 'God of War' for a New Perspective",
+      "author": "Mihir Sheth",
+      "publisher": "GDC Vault",
+      "url": "https://www.gdcvault.com/play/1026423/Evolving-Combat-in-God-of",
+      "year": 2019,
+      "language": "英文",
+      "medium": "演讲",
+      "tier": "一手",
+      "topics": [
+        "角色3C",
+        "技能",
+        "镜头",
+        "战斗支柱"
+      ],
+      "summary": "复盘《战神》更换近肩视角后的战斗重构，重点讨论如何在镜头、移动、瞄准与系列身份之间保持一致。",
+      "takeaways": [
+        "先写清不可丢失的战斗身份",
+        "视角变化会连锁影响敌人、距离和招式覆盖",
+        "原型要围绕支柱验证而不是围绕内容量"
+      ],
+      "readingTime": 60,
+      "curatorScore": 5,
+      "featured": true,
+      "addedAt": "2026-09-09"
+    },
+    {
+      "publicationStatus": "published",
+      "id": "gow-six-years",
+      "title": "与《战神》共度六年",
+      "originalTitle": "Six Years With God of War",
+      "author": "Jason de Heras",
+      "publisher": "Jason de Heras",
+      "url": "https://www.jasondeheras.com/gamedesign/six-years-with-god-of-war",
+      "year": 2014,
+      "language": "英文",
+      "medium": "文章",
+      "tier": "一手",
+      "topics": [
+        "怪物设计",
+        "Boss",
+        "制作流程",
+        "打击感"
+      ],
+      "summary": "资深战斗设计师回顾《战神3》《升天》的怪物与 Boss 制作，明确战斗策划在概念、资产拆分、实现和跨职能迭代中的职责。",
+      "takeaways": [
+        "单个怪物先建立一个可被学习的核心花招",
+        "Boss 流程需要设计、动画、关卡、特效的小型突击队",
+        "可玩实现与反复测试会改写早期概念"
+      ],
+      "readingTime": 15,
+      "curatorScore": 5,
+      "featured": true,
+      "addedAt": "2026-09-09"
+    },
+    {
+      "publicationStatus": "published",
+      "id": "combat-canceled",
+      "title": "战斗取消：《战神》与动作游戏设计",
+      "originalTitle": "Combat Canceled: God of War & Action Game Design",
+      "author": "Eric Williams",
+      "publisher": "Game Developer",
+      "url": "https://www.gamedeveloper.com/game-platforms/combat-canceled-i-god-of-war-i-action-game-design",
+      "year": 2008,
+      "language": "英文",
+      "medium": "文章",
+      "tier": "一手",
+      "topics": [
+        "角色3C",
+        "取消规则",
+        "输入缓冲",
+        "手感"
+      ],
+      "summary": "以《战神》的动作脚本解释预输入、即时取消、前后摇窗口及其对响应性、攻防关系和连段创造力的影响。",
+      "takeaways": [
+        "为每个动作显式记录命中帧与取消窗口",
+        "输入缓冲解决时序容错，即时取消提供响应性",
+        "取消规则同时决定深度、易用性与潜在漏洞"
+      ],
+      "readingTime": 18,
+      "curatorScore": 5,
+      "featured": false,
+      "addedAt": "2026-09-09"
+    },
+    {
+      "publicationStatus": "published",
+      "id": "gow-valkyries",
+      "title": "《战神》九场女武神 Boss 战如何诞生",
+      "originalTitle": "How God of War’s Nine Valkyrie Boss Battles Were Created",
+      "author": "Denny Yeh",
+      "publisher": "PlayStation Blog",
+      "url": "https://blog.playstation.com/archive/2019/02/01/how-god-of-wars-nine-epic-valkyrie-boss-battles-were-created",
+      "year": 2019,
+      "language": "英文",
+      "medium": "文章",
+      "tier": "一手",
+      "topics": [
+        "Boss",
+        "技能组",
+        "难度",
+        "内容复用"
+      ],
+      "summary": "拆解九位女武神如何共享基础语汇、形成个体考题，并最终在女武神王身上完成综合考试。",
+      "takeaways": [
+        "共享动作语汇能降低内容成本与学习成本",
+        "每个变体突出一个新考点",
+        "终局 Boss 可复用已教学的语汇做综合题"
+      ],
+      "readingTime": 16,
+      "curatorScore": 4,
+      "featured": false,
+      "addedAt": "2026-09-09"
+    },
+    {
+      "publicationStatus": "published",
+      "id": "fear-ai",
+      "title": "三个状态与一个计划：《F.E.A.R.》的 AI",
+      "originalTitle": "Three States and a Plan: The AI of F.E.A.R.",
+      "author": "Jeff Orkin",
+      "publisher": "GDC Vault",
+      "url": "https://gdcvault.com/play/1013282/Three-States-and-a-Plan",
+      "year": 2006,
+      "language": "英文",
+      "medium": "演讲",
+      "tier": "一手",
+      "topics": [
+        "怪物AI",
+        "GOAP",
+        "群体战",
+        "可读性"
+      ],
+      "summary": "经典 GOAP 案例：用目标与动作规划塑造会重新规划、包抄和利用环境的敌人，同时借台词把内部决策外显给玩家。",
+      "takeaways": [
+        "AI 的价值是制造可理解的战斗故事",
+        "动作前置条件和代价比巨型状态机更便于组合",
+        "用语音与表演把“聪明”展示出来"
+      ],
+      "readingTime": 60,
+      "curatorScore": 5,
+      "featured": false,
+      "addedAt": "2026-09-09"
+    },
+    {
+      "publicationStatus": "published",
+      "id": "division-ai",
+      "title": "自主与控制的融合：《全境封锁》NPC 设计",
+      "originalTitle": "Blending Autonomy and Control: Creating NPCs for 'The Division'",
+      "author": "Philip Dunstan / Drew Rechner",
+      "publisher": "GDC Vault",
+      "url": "https://www.gdcvault.com/play/1023383/Blending-Autonomy-and-Control-Creating",
+      "year": 2016,
+      "language": "英文",
+      "medium": "演讲",
+      "tier": "一手",
+      "topics": [
+        "怪物AI",
+        "遭遇战",
+        "关卡协同"
+      ],
+      "summary": "讨论开放世界系统型 AI 与关卡作者控制如何共存，以及关卡策划怎样在战前与战中影响 NPC 行为。",
+      "takeaways": [
+        "系统自主性和作者意图应分层",
+        "为关卡侧提供可读、可调的行为约束",
+        "遭遇战设计要能预测 AI 在空间中的选择"
+      ],
+      "readingTime": 60,
+      "curatorScore": 4,
+      "featured": false,
+      "addedAt": "2026-09-09"
+    },
+    {
+      "publicationStatus": "published",
+      "id": "cedec-position",
+      "title": "角色 AI 的战术位置分析系统",
+      "originalTitle": "キャラクターの人工知能のための戦術位置解析システム",
+      "author": "三宅阳一郎",
+      "publisher": "CEDEC 2016",
+      "url": "https://cedec.cesa.or.jp/2016/session/ENG/5264.html",
+      "year": 2016,
+      "language": "日文",
+      "medium": "演讲",
+      "tier": "一手",
+      "topics": [
+        "怪物AI",
+        "站位",
+        "环境查询",
+        "群体战"
+      ],
+      "summary": "介绍角色如何结合环境与自身能力寻找合适战术位置，是远近程分工、包围与掩体选择的系统基础。",
+      "takeaways": [
+        "把“去哪儿”与“做什么”拆成可组合决策",
+        "位置评分必须包含角色能力与当前局势",
+        "调试工具要可视化候选点和评分来源"
+      ],
+      "readingTime": 60,
+      "curatorScore": 4,
+      "featured": false,
+      "addedAt": "2026-09-09"
+    },
+    {
+      "publicationStatus": "published",
+      "id": "naraka-ux",
+      "title": "《永劫无间》的 UX 设计：从原型到成品",
+      "author": "雷火UX",
+      "publisher": "GDC 2022 / 雷火UX",
+      "url": "https://maimai.cn/article/detail?efid=g2LEsTDD-lU16ghq_6tOAw&fid=1746630382",
+      "year": 2022,
+      "language": "中文",
+      "medium": "演讲",
+      "tier": "一手",
+      "topics": [
+        "玩法规则",
+        "可读性",
+        "新手体验",
+        "战斗平衡"
+      ],
+      "summary": "沿四个开发阶段说明近战博弈、颜色编码、动作取消、远近程平衡与飞索追击如何围绕“无拘”体验迭代。",
+      "takeaways": [
+        "轻重击与振刀用颜色形成高压下的快速识别",
+        "允许取消既降低挫败也为高手提供假动作",
+        "距离失衡不一定能靠数值解决，可加入位移系统重构关系"
+      ],
+      "readingTime": 20,
+      "curatorScore": 5,
+      "featured": true,
+      "addedAt": "2026-09-09"
+    },
+    {
+      "publicationStatus": "published",
+      "id": "jsky-essence",
+      "title": "动作游戏的本质，与相关设计方法论",
+      "author": "jskyzero",
+      "publisher": "设计者笔记",
+      "url": "https://design.jskyzero.com/2024/05/14/ActionGameDesign/",
+      "year": 2024,
+      "language": "中文",
+      "medium": "文章",
+      "tier": "精选二手",
+      "topics": [
+        "基础理论",
+        "角色3C",
+        "打击感",
+        "微观循环"
+      ],
+      "summary": "用 MDA、奖惩导向与“感知—认知—行动”循环搭建动作游戏分析框架，并连接到底层状态、判定和宏观内容组织。",
+      "takeaways": [
+        "先检查玩家能否获取信息、采取行动、看懂结果",
+        "主角选项和怪物考题的复杂度要做配比",
+        "状态机、逻辑轴与系统规则应分层描述"
+      ],
+      "readingTime": 35,
+      "curatorScore": 5,
+      "featured": true,
+      "addedAt": "2026-09-09"
+    },
+    {
+      "publicationStatus": "published",
+      "id": "jsky-lion-ai",
+      "title": "拆包看《只狼》狮子猿 AI 设计",
+      "author": "jskyzero",
+      "publisher": "设计者笔记",
+      "url": "https://design.jskyzero.com/2023/10/10/sekiro_lion_tamarin_AI/",
+      "year": 2023,
+      "language": "中文",
+      "medium": "文章",
+      "tier": "精选二手",
+      "topics": [
+        "怪物AI",
+        "Boss",
+        "拆解方法",
+        "权重决策"
+      ],
+      "summary": "基于拆包数据观察狮子猿的行为目标、距离分层、权重与中断响应，是从成品反推 Boss 决策结构的实战样例。",
+      "takeaways": [
+        "区分自由态选招与事件中断响应",
+        "用距离、状态和冷却筛选候选动作",
+        "拆包结论应标记推断与实证边界"
+      ],
+      "readingTime": 45,
+      "curatorScore": 3,
+      "featured": false,
+      "addedAt": "2026-09-09"
+    },
+    {
+      "publicationStatus": "published",
+      "id": "jsky-sss",
+      "title": "动作游戏设计的 SSS 方法",
+      "author": "jskyzero",
+      "publisher": "设计者笔记",
+      "url": "https://design.jskyzero.com/2025/03/25/SSS/",
+      "year": 2025,
+      "language": "中文",
+      "medium": "文章",
+      "tier": "精选二手",
+      "topics": [
+        "基础理论",
+        "技能",
+        "怪物设计",
+        "玩法规则"
+      ],
+      "summary": "把动作设计整理为 Situation、Solution、Satisfaction 三个连续问题，适合检查考题、解法与回报是否形成闭环。",
+      "takeaways": [
+        "先定义玩家面对的情景，再设计工具",
+        "一个解法应能在多个情景下产生差异化价值",
+        "爽感是正确解题后的反馈而不是独立特效"
+      ],
+      "readingTime": 40,
+      "curatorScore": 5,
+      "featured": true,
+      "addedAt": "2026-09-09"
+    },
+    {
+      "publicationStatus": "published",
+      "id": "jsky-12-actions",
+      "title": "12 种动作机制与 160+ 案例",
+      "author": "jskyzero",
+      "publisher": "设计者笔记",
+      "url": "https://design.jskyzero.com/2024/04/04/12_action_design_type/",
+      "year": 2024,
+      "language": "中文",
+      "medium": "文章",
+      "tier": "精选二手",
+      "topics": [
+        "技能",
+        "角色3C",
+        "机制库",
+        "拆解方法"
+      ],
+      "summary": "按机制目的归纳大量动作案例，可作为立项初期的检索目录与竞品拆解索引，而非直接照搬的招式清单。",
+      "takeaways": [
+        "先按交互目的分类，再比较表现差异",
+        "记录动作对位置、状态、资源的改变",
+        "案例库应服务于问题检索而非数量堆积"
+      ],
+      "readingTime": 30,
+      "curatorScore": 3,
+      "featured": false,
+      "addedAt": "2026-09-09"
+    },
+    {
+      "publicationStatus": "published",
+      "id": "jsky-gdc-index",
+      "title": "GDC 动作游戏分享精选",
+      "author": "jskyzero",
+      "publisher": "设计者笔记",
+      "url": "https://design.jskyzero.com/2023/11/13/ACT_with_GDC/",
+      "year": 2023,
+      "language": "中文",
+      "medium": "文章",
+      "tier": "精选二手",
+      "topics": [
+        "资料索引",
+        "角色3C",
+        "怪物设计",
+        "制作流程"
+      ],
+      "summary": "按动作游戏主题整理 GDC 演讲入口，适合作为继续深挖原始演讲与幻灯片的导航页。",
+      "takeaways": [
+        "索引只做入口，关键结论回到原演讲",
+        "可按角色、敌人、镜头、动画与流程分批学习",
+        "记录演讲年份以识别技术语境"
+      ],
+      "readingTime": 20,
+      "curatorScore": 3,
+      "featured": false,
+      "addedAt": "2026-09-09"
+    },
+    {
+      "publicationStatus": "published",
+      "id": "jsky-monster-hunter-ai",
+      "title": "《怪物猎人》中的 AI 出招设计",
+      "author": "jskyzero",
+      "publisher": "设计者笔记",
+      "url": "https://design.jskyzero.com/2022/07/22/mhrsb_ai/",
+      "year": 2022,
+      "language": "中文",
+      "medium": "文章",
+      "tier": "精选二手",
+      "topics": [
+        "怪物AI",
+        "选招",
+        "距离",
+        "权重决策"
+      ],
+      "summary": "从距离、朝向、状态与权重理解大型怪物选招，适合作为怪物动作表与 AI 参数表的对照样例。",
+      "takeaways": [
+        "候选动作先通过硬条件筛选，再参与权重选择",
+        "权重随机用于控制可预测性而非制造纯随机",
+        "位置与朝向是动作价值的一部分"
+      ],
+      "readingTime": 25,
+      "curatorScore": 3,
+      "featured": false,
+      "addedAt": "2026-09-09"
+    },
+    {
+      "publicationStatus": "published",
+      "id": "jsky-behavior-tree",
+      "title": "游戏 AI 与行为树",
+      "author": "jskyzero",
+      "publisher": "设计者笔记",
+      "url": "https://design.jskyzero.com/2021/07/19/GameAI/",
+      "year": 2021,
+      "language": "中文",
+      "medium": "文章",
+      "tier": "精选二手",
+      "topics": [
+        "怪物AI",
+        "行为树",
+        "实现框架",
+        "调试"
+      ],
+      "summary": "梳理行为树节点、执行逻辑与常见架构，帮助策划把怪物意图转写为可实现、可调试的行为结构。",
+      "takeaways": [
+        "行为树表达执行组织，不自动产生有趣决策",
+        "策划文档要写清条件、优先级、中断和冷却",
+        "调试视图比节点数量更影响迭代效率"
+      ],
+      "readingTime": 35,
+      "curatorScore": 3,
+      "featured": false,
+      "addedAt": "2026-09-09"
+    },
+    {
+      "publicationStatus": "published",
+      "id": "jsky-role",
+      "title": "游戏设计：战斗策划要求",
+      "author": "jskyzero",
+      "publisher": "设计者笔记",
+      "url": "https://design.jskyzero.com/2023/10/23/BattleDesignAbility/",
+      "year": 2023,
+      "language": "中文",
+      "medium": "文章",
+      "tier": "精选二手",
+      "topics": [
+        "制作流程",
+        "岗位能力",
+        "角色3C",
+        "怪物设计"
+      ],
+      "summary": "从知识、实现、沟通与审美等维度描述战斗策划岗位，适合用于知识库目录反查能力缺口。",
+      "takeaways": [
+        "战斗策划需要能把体验语言翻译为参数与状态",
+        "实现能力决定验证闭环速度",
+        "跨动画、特效、音频协作属于核心职责"
+      ],
+      "readingTime": 15,
+      "curatorScore": 3,
+      "featured": false,
+      "addedAt": "2026-09-09"
+    },
+    {
+      "publicationStatus": "published",
+      "id": "cowlevel-action",
+      "title": "当我们谈论动作游戏，我们在谈论什么",
+      "author": "五十万",
+      "publisher": "奶牛关",
+      "url": "https://cowlevel.net/article/2007375",
+      "year": 2018,
+      "language": "中文",
+      "medium": "文章",
+      "tier": "精选二手",
+      "topics": [
+        "基础理论",
+        "技能",
+        "怪物设计",
+        "决策"
+      ],
+      "summary": "从动作游戏的复合决策与内容量出发，讨论玩家选项、敌人选项怎样共同支撑系统深度。",
+      "takeaways": [
+        "系统深度来自情景与选项的交叉组合",
+        "玩家和敌人的能力应在交互关系中设计",
+        "动作内容量必须服务于不同决策而非同质招式"
+      ],
+      "readingTime": 35,
+      "curatorScore": 5,
+      "featured": true,
+      "addedAt": "2026-09-09"
+    },
+    {
+      "publicationStatus": "published",
+      "id": "tencent-act-mobile",
+      "title": "谈谈 ACT 手游战斗系统",
+      "author": "腾讯游戏学堂作者",
+      "publisher": "腾讯游戏学堂",
+      "url": "https://gwb.tencent.com/community/detail/132732",
+      "year": 2019,
+      "language": "中文",
+      "medium": "文章",
+      "tier": "精选二手",
+      "topics": [
+        "角色3C",
+        "怪物设计",
+        "场景",
+        "玩法规则"
+      ],
+      "summary": "以角色、怪物、场景与碰撞为四个切口讨论移动端 ACT，强调同一怪物招式应允许风险收益不同的多种应对。",
+      "takeaways": [
+        "用角色—怪物—场景—碰撞检查战斗闭环",
+        "尽量避免每个招式只有唯一解",
+        "移动端输入限制要反向塑造技能结构"
+      ],
+      "readingTime": 22,
+      "curatorScore": 3,
+      "featured": false,
+      "addedAt": "2026-09-09"
+    },
+    {
+      "publicationStatus": "published",
+      "id": "tencent-group-ai",
+      "title": "AI 设计的若干规则：集团 AI",
+      "author": "腾讯游戏学堂作者",
+      "publisher": "腾讯游戏学堂",
+      "url": "https://gwb.tencent.com/community/detail/105183",
+      "year": 2016,
+      "language": "中文",
+      "medium": "文章",
+      "tier": "精选二手",
+      "topics": [
+        "怪物AI",
+        "群体战",
+        "攻击管理器",
+        "可读性"
+      ],
+      "summary": "用“无形指挥官”解释多人围攻中的站位分配、游走和攻击许可，是攻击令牌与群体节奏的直观入门。",
+      "takeaways": [
+        "群体控制器负责节奏，单体 AI 负责表演",
+        "限制同时进攻者可避免不可读的伤害叠加",
+        "非攻击者也需要有威胁感与合理站位"
+      ],
+      "readingTime": 18,
+      "curatorScore": 3,
+      "featured": false,
+      "addedAt": "2026-09-09"
+    },
+    {
+      "publicationStatus": "published",
+      "id": "mike-birkhead-act",
+      "title": "ACT 游戏设计：角色、动作与敌人如何创造",
+      "author": "Mike Birkhead",
+      "publisher": "GameRes 游资网",
+      "url": "https://www.gameres.com/704602.html",
+      "year": 2017,
+      "language": "中文",
+      "medium": "文章",
+      "tier": "一手",
+      "topics": [
+        "角色3C",
+        "怪物设计",
+        "技能",
+        "成长感"
+      ],
+      "summary": "《战神》系列高级战斗设计师从动作冒险与格斗游戏的目标差异出发，讨论玩家成长、敌人花招和角色动作集。",
+      "takeaways": [
+        "动作冒险的核心驱动力之一是能力掌握带来的成长感",
+        "每种敌人优先突出一个能被学习的花招",
+        "角色系统总学习负担要统筹，而非只看战斗深度"
+      ],
+      "readingTime": 24,
+      "curatorScore": 4,
+      "featured": false,
+      "addedAt": "2026-09-09"
+    },
+    {
+      "publicationStatus": "published",
+      "id": "gmtk-combat",
+      "title": "怎样构成优秀的战斗系统？",
+      "originalTitle": "What Makes a Good Combat System?",
+      "author": "Mark Brown",
+      "publisher": "Game Maker's Toolkit",
+      "url": "https://www.youtube.com/watch?v=8X4fx-YncqA",
+      "year": 2018,
+      "language": "英文",
+      "medium": "视频",
+      "tier": "精选二手",
+      "topics": [
+        "基础理论",
+        "技能",
+        "怪物设计",
+        "决策"
+      ],
+      "summary": "比较多种优秀战斗系统，强调没有通用答案，关键是玩家动作集、敌方考题与目标体验彼此咬合。",
+      "takeaways": [
+        "先定义系统希望玩家持续做出的判断",
+        "工具的差异需要由敌人与空间放大",
+        "深度来自有意义的权衡而非按键数量"
+      ],
+      "readingTime": 12,
+      "curatorScore": 5,
+      "featured": true,
+      "addedAt": "2026-09-09"
+    },
+    {
+      "publicationStatus": "published",
+      "id": "gmtk-doom",
+      "title": "拆解《毁灭战士：永恒》的一场战斗",
+      "originalTitle": "Anatomy of a DOOM Eternal Fight",
+      "author": "Mark Brown",
+      "publisher": "Game Maker's Toolkit",
+      "url": "https://www.youtube.com/watch?v=mMNCe4x7Ico",
+      "year": 2020,
+      "language": "英文",
+      "medium": "视频",
+      "tier": "精选二手",
+      "topics": [
+        "资源循环",
+        "遭遇战",
+        "怪物设计",
+        "移动"
+      ],
+      "summary": "逐段拆解《DOOM Eternal》遭遇，观察生命、护甲、弹药与处决怎样逼迫玩家移动、切枪和主动进攻。",
+      "takeaways": [
+        "资源恢复行为应把玩家推向目标战斗节奏",
+        "敌人组合持续改变目标优先级",
+        "场地提供路线选择而不是安全角落"
+      ],
+      "readingTime": 15,
+      "curatorScore": 3,
+      "featured": false,
+      "addedAt": "2026-09-09"
+    },
+    {
+      "publicationStatus": "published",
+      "id": "gmtk-ai",
+      "title": "怎样构成优秀的 AI？",
+      "originalTitle": "What Makes Good AI?",
+      "author": "Mark Brown",
+      "publisher": "Game Maker's Toolkit",
+      "url": "https://www.youtube.com/watch?v=9bbhJi0NBkk",
+      "year": 2017,
+      "language": "英文",
+      "medium": "视频",
+      "tier": "精选二手",
+      "topics": [
+        "怪物AI",
+        "可读性",
+        "公平性",
+        "反馈"
+      ],
+      "summary": "从玩家体验而非算法复杂度定义“好 AI”：可理解、可预测但不僵化，并能让玩家看见其意图与反应。",
+      "takeaways": [
+        "聪明但不可读的 AI 不一定带来好体验",
+        "AI 要对玩家行为给出可观察反应",
+        "公平感依赖信息与归因，而非绝对对称"
+      ],
+      "readingTime": 10,
+      "curatorScore": 3,
+      "featured": false,
+      "addedAt": "2026-09-09"
+    },
+    {
+      "publicationStatus": "published",
+      "id": "dreamscaper-combat",
+      "title": "《Dreamscaper》：独立预算下的高质量战斗",
+      "originalTitle": "'Dreamscaper': Killer Combat on an Indie Budget",
+      "author": "Ian Cofino",
+      "publisher": "GDC Vault",
+      "url": "https://www.gdcvault.com/play/1027585/-Dreamscaper-Killer-Combat-on",
+      "year": 2022,
+      "language": "英文",
+      "medium": "演讲",
+      "tier": "一手",
+      "topics": [
+        "打击感",
+        "制作流程",
+        "低成本",
+        "技能"
+      ],
+      "summary": "设计、动画和特效一体的开发者复盘三人团队如何用有限资源制作有完成度的动作战斗。",
+      "takeaways": [
+        "小团队要优先投资可复用的反馈层",
+        "设计、动画与特效同步迭代能减少返工",
+        "先把少量动作做到一致，再扩内容"
+      ],
+      "readingTime": 60,
+      "curatorScore": 4,
+      "featured": false,
+      "addedAt": "2026-09-09"
+    },
+    {
+      "publicationStatus": "published",
+      "id": "gdc-conflict",
+      "title": "制造冲突：3A 动作游戏的战斗设计",
+      "originalTitle": "Creating Conflict: Combat Design for AAA Action Games",
+      "author": "Michael Barclay / Sam Howels / Pete Ellis",
+      "publisher": "GDC Europe",
+      "url": "https://media.gdcvault.com/gdceurope2016/presentations/Ellis_Peter_CreatingConflictCombat.pdf",
+      "year": 2016,
+      "language": "英文",
+      "medium": "演讲",
+      "tier": "一手",
+      "topics": [
+        "遭遇战",
+        "关卡协同",
+        "节奏",
+        "空间"
+      ],
+      "summary": "从叙事意图、战斗几何和难度关系讲解 AAA 动作游戏的遭遇战搭建，连接怪物阵容与场景结构。",
+      "takeaways": [
+        "几何本身就是难度参数",
+        "遭遇要表达叙事与情绪目标",
+        "空间、敌人和玩家能力必须联调"
+      ],
+      "readingTime": 45,
+      "curatorScore": 4,
+      "featured": false,
+      "addedAt": "2026-09-09"
+    },
+    {
+      "publicationStatus": "published",
+      "id": "game-feel-book",
+      "title": "《游戏感：虚拟感觉的游戏设计师指南》",
+      "originalTitle": "Game Feel: A Game Designer's Guide to Virtual Sensation",
+      "author": "Steve Swink",
+      "publisher": "CRC Press / Morgan Kaufmann",
+      "url": "https://www.routledge.com/Game-Feel-A-Game-Designers-Guide-to-Virtual-Sensation/Swink/p/book/9780123743282",
+      "year": 2009,
+      "language": "英文",
+      "medium": "书籍",
+      "tier": "一手",
+      "topics": [
+        "手感",
+        "角色3C",
+        "反馈",
+        "基础理论"
+      ],
+      "summary": "以输入、响应、情境、润色、隐喻和规则为维度定义并测量游戏感，是建立 3C 与打击感评审表的基础读物。",
+      "takeaways": [
+        "把“感觉不对”拆成可观察维度",
+        "响应性不仅是低延迟，也包含结果是否符合预期",
+        "润色必须依附于清晰的控制与规则"
+      ],
+      "readingTime": 480,
+      "curatorScore": 5,
+      "featured": true,
+      "addedAt": "2026-09-09"
+    },
+    {
+      "publicationStatus": "published",
+      "id": "game-mechanics-book",
+      "title": "《游戏机制：高级游戏设计技术》",
+      "originalTitle": "Game Mechanics: Advanced Game Design",
+      "author": "Ernest Adams / Joris Dormans",
+      "publisher": "New Riders",
+      "url": "https://www.informit.com/store/game-mechanics-advanced-game-design-9780321820273",
+      "year": 2012,
+      "language": "英文",
+      "medium": "书籍",
+      "tier": "一手",
+      "topics": [
+        "资源循环",
+        "玩法规则",
+        "数值平衡",
+        "成长"
+      ],
+      "summary": "用内部经济、反馈回路、Machinations 与模拟方法形式化机制，特别适合战斗资源循环、成长和局内经济建模。",
+      "takeaways": [
+        "先画资源节点、转换器与流向，再讨论数值",
+        "正负反馈决定系统的收敛与滚雪球",
+        "用模拟快速暴露循环堵点和无限收益"
+      ],
+      "readingTime": 600,
+      "curatorScore": 5,
+      "featured": true,
+      "addedAt": "2026-09-09"
+    },
+    {
+      "publicationStatus": "published",
+      "id": "game-feel-survey",
+      "title": "游戏感设计：研究综述",
+      "originalTitle": "Designing Game Feel: A Survey",
+      "author": "Mads Haahr 等",
+      "publisher": "arXiv",
+      "url": "https://arxiv.org/abs/2011.09201",
+      "year": 2020,
+      "language": "英文",
+      "medium": "文章",
+      "tier": "一手",
+      "topics": [
+        "手感",
+        "反馈",
+        "研究综述",
+        "基础理论"
+      ],
+      "summary": "从研究视角综述 game feel，将其定义为对瞬时交互情感影响的有意设计，可补足经验型资料的理论边界。",
+      "takeaways": [
+        "区分输入动作、系统响应和主观感受",
+        "评估需要结合客观参数与玩家报告",
+        "同一反馈技术会因语境产生不同情绪效果"
+      ],
+      "readingTime": 35,
+      "curatorScore": 4,
+      "featured": false,
+      "addedAt": "2026-09-09"
+    },
+    {
+      "publicationStatus": "published",
+      "id": "enemy-melee-ai",
+      "title": "近战系统中的敌人与敌方 AI 设计",
+      "originalTitle": "Enemy Design and Enemy AI for Melee Combat Systems",
+      "author": "Mike Stout",
+      "publisher": "Game Developer",
+      "url": "https://www.gamedeveloper.com/design/enemy-design-and-enemy-ai-for-melee-combat-systems",
+      "year": 2015,
+      "language": "英文",
+      "medium": "文章",
+      "tier": "精选二手",
+      "topics": [
+        "怪物设计",
+        "怪物AI",
+        "预警",
+        "群体战"
+      ],
+      "summary": "系统梳理近战敌人的能力、攻击预警、镜头外规则与群体攻击节奏，适合直接转化为怪物模板检查项。",
+      "takeaways": [
+        "强招需要更明确的轮廓、音效或颜色预警",
+        "镜头外攻击必须有额外信息通道或严格限制",
+        "群体战的公平感依赖攻击节奏管理"
+      ],
+      "readingTime": 25,
+      "curatorScore": 3,
+      "featured": false,
+      "addedAt": "2026-09-09"
+    },
+    {
+      "publicationStatus": "published",
+      "id": "death-animation-feel",
+      "title": "游戏感：为什么你的死亡动画不够好",
+      "originalTitle": "Game Feel: Why Your Death Animation Sucks",
+      "author": "Nicolae Berbece",
+      "publisher": "GDC Europe",
+      "url": "https://www.gdcvault.com/play/1022759/Game-Feel-Why-Your-Death",
+      "year": 2015,
+      "language": "英文",
+      "medium": "演讲",
+      "tier": "一手",
+      "topics": [
+        "打击感",
+        "反馈",
+        "动画",
+        "音效"
+      ],
+      "summary": "现场从基础实现逐层加入动画、音效、屏幕震动、粒子与构图，展示反馈层如何共同改变瞬时手感。",
+      "takeaways": [
+        "按层开关反馈，逐项验证贡献",
+        "反馈强度应与事件重要度匹配",
+        "响应时序比素材数量更重要"
+      ],
+      "readingTime": 45,
+      "curatorScore": 4,
+      "featured": false,
+      "addedAt": "2026-09-09"
+    },
+    {
+      "publicationStatus": "published",
+      "id": "game-ai-pro-circle",
+      "title": "超越“功夫圈”：NPC 攻击管理",
+      "originalTitle": "Beyond the Kung-Fu Circle: Managing NPC Attacks",
+      "author": "Matthew Jack",
+      "publisher": "Game AI Pro",
+      "url": "https://www.gameaipro.com/GameAIPro/GameAIPro_Chapter28_Beyond_the_Kung-Fu_Circle_A_Flexible_System_for_Managing_NPC_Attacks.pdf",
+      "year": 2013,
+      "language": "英文",
+      "medium": "书籍",
+      "tier": "一手",
+      "topics": [
+        "怪物AI",
+        "攻击管理器",
+        "群体战",
+        "站位"
+      ],
+      "summary": "经典群战攻击管理方案，讨论如何超越简单的“功夫圈”，在可读性、压力与敌人自主性之间调配攻击机会。",
+      "takeaways": [
+        "把攻击许可视为可分配资源",
+        "威胁不仅来自正在攻击的敌人",
+        "管理器要能表达角色类型与战斗阶段差异"
+      ],
+      "readingTime": 35,
+      "curatorScore": 4,
+      "featured": false,
+      "addedAt": "2026-09-09"
+    }
+  ]
+}
