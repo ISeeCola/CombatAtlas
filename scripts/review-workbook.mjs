@@ -1,7 +1,10 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
-import * as XLSX from 'xlsx';
+import { createRequire } from 'node:module';
+
+const require = createRequire(import.meta.url);
+const XLSX = require('xlsx');
 
 export const REVIEW_HEADERS = ['候选 ID','sourceId','审核状态','发现日期','中文标题','原标题','作者','来源','原文 URL','规范 URL','平台 ID','发布年份','语言','媒介','建议来源层级','建议主题','证据状态','短读证据','深读证据','去重结果','置信度','预筛-相关度','预筛-信息密度','预筛-新颖性','预筛-来源可信度','预筛-证据可得性','预筛总分','正式-主题价值','正式-方法迁移','正式-证据案例','正式-库内增量','正式-可操作启发','正式-来源可信度','正式-结构价值','正式总分','总评','摘要','核心方法','证据与案例','术语对照','短摘录','适用边界','库内连接','实验落点','可迁移假设','最小验证动作','观察指标','失败信号','归档路径','阅读时间（分钟）','展示价值（1-5）','精选状态','入库日期','审核备注'];
 const allowedStatuses = new Set(['已发现','短名单','候选','待人工复核','已拒绝','已接受','已入库','重复']);
