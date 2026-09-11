@@ -10,6 +10,14 @@ export const REVIEW_HEADERS = ['候选 ID','sourceId','审核状态','发现日�
 const allowedStatuses = new Set(['已发现','短名单','候选','待人工复核','已拒绝','已接受','已入库','重复']);
 
 function clean(value) { return value == null ? '' : String(value).trim(); }
+function argumentValue(name) {
+  const index = process.argv.indexOf(name);
+  return index >= 0 ? process.argv[index + 1] : '';
+}
+function writeReport(reportPath, payload) {
+  if (!reportPath) return;
+  fs.writeFileSync(reportPath, JSON.stringify({ version: 1, ...payload }, null, 2), 'utf8');
+}
 function findHeaderRow(matrix) {
   const row = matrix.findIndex((cells) => REVIEW_HEADERS.every((header) => cells.some((cell) => clean(cell) === header)));
   if (row < 0) throw new Error('未找到 CombatAtlasInbox 必需表头');
@@ -37,17 +45,17 @@ export function validateReview(rows) {
     const candidateId = clean(row['候选 ID']);
     const sourceId = rowSourceId;
     const status = clean(row['审核状态']);
-    if (!candidateId) errors.push(`${label}缺少候选 ID`);
-    else if (candidateIds.has(candidateId)) errors.push(`${label}候选 ID 重复：${candidateId}`);
+    if (!candidateId) errors.push(`${label}：缺少候选 ID`);
+    else if (candidateIds.has(candidateId)) errors.push(`${label}：候选 ID 重复：${candidateId}`);
     candidateIds.add(candidateId);
     if (sourceId) {
-      if (sourceIds.has(sourceId)) errors.push(`${label} sourceId 重复：${sourceId}`);
+      if (sourceIds.has(sourceId)) errors.push(`${label}：sourceId 重复：${sourceId}`);
       sourceIds.add(sourceId);
     }
-    if (!allowedStatuses.has(status)) errors.push(`${label}审核状态非法：${status}`);
-    if (!clean(row['中文标题']) || !clean(row['规范 URL'])) errors.push(`${label}缺少标题或规范 URL`);
+    if (!allowedStatuses.has(status)) errors.push(`${label}：审核状态非法：${status}`);
+    if (!clean(row['中文标题']) || !clean(row['规范 URL'])) errors.push(`${label}：缺少标题或规范 URL`);
     const pre = Number(row['预筛总分']);
-    if (Number.isFinite(pre) && (pre < 0 || pre > 30)) errors.push(`${label}预筛总分超出 0–30`);
+    if (Number.isFinite(pre) && (pre < 0 || pre > 30)) errors.push(`${label}：预筛总分超出 0–30`);
     if (status === '已接受' || status === '已入库') {
       const formal = Number(row['正式总分']);
       const required = ['深读证据','去重结果','适用边界','可迁移假设','最小验证动作','观察指标','失败信号','归档路径'];
@@ -69,13 +77,18 @@ if (process.argv.includes('--validate')) {
   console.log(JSON.stringify({ workbookPath, total: rows.length, statuses: Object.fromEntries(Object.entries(counts).map(([key, value]) => [key, value.length])) }));
 }
 if (process.argv.includes('--accepted-json')) {
-  const outputIndex = process.argv.indexOf('--accepted-json') + 1;
-  const outputPath = process.argv[outputIndex];
+  const outputPath = argumentValue('--accepted-json');
+  const reportPath = argumentValue('--report-json');
   if (!outputPath) throw new Error('--accepted-json 需要输出路径');
   const { rows } = readReview();
   const errors = validateReview(rows);
-  if (errors.length) { console.error(`入库安全门未通过：\n${errors.join('\n')}`); process.exit(2); }
+  if (errors.length) {
+    writeReport(reportPath, { ok: false, title: '入库安全门未通过：', errors, accepted: 0 });
+    console.error(`入库安全门未通过：\n${errors.join('\n')}`);
+    process.exit(2);
+  }
   const accepted = rows.filter((row) => String(row['审核状态']).trim() === '已接受');
   fs.writeFileSync(outputPath, JSON.stringify(accepted, null, 2));
+  writeReport(reportPath, { ok: true, title: '审核校验通过', errors: [], accepted: accepted.length });
   console.log(JSON.stringify({ accepted: accepted.length, outputPath }));
 }

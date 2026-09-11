@@ -5,17 +5,34 @@
 )
 $ErrorActionPreference = 'Stop'
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
-$root = Split-Path $PSScriptRoot -Parent
-$pendingDir = Join-Path $root 'automation\pending'
-New-Item -ItemType Directory -Force -Path $pendingDir | Out-Null
-$acceptedPath = Join-Path $pendingDir ("accepted-{0}.json" -f [Guid]::NewGuid().ToString('N'))
+$runtimeDir = [System.IO.Path]::GetTempPath()
+$acceptedPath = Join-Path $runtimeDir ("CombatAtlas-accepted-{0}.json" -f [Guid]::NewGuid().ToString('N'))
+$validationReportPath = Join-Path $runtimeDir ("CombatAtlas-validation-{0}.json" -f [Guid]::NewGuid().ToString('N'))
 $env:COMBAT_ATLAS_REVIEW = $ReviewPath
 function Write-Result([string]$Text) {
   if ($ResultPath) { [System.IO.File]::WriteAllText($ResultPath, $Text, [System.Text.Encoding]::Unicode) }
 }
 try {
-  $validationOutput = @(& node (Join-Path $PSScriptRoot 'review-workbook.mjs') --accepted-json $acceptedPath 2>&1)
-  if ($LASTEXITCODE -ne 0) { throw ($validationOutput -join [Environment]::NewLine) }
+  $previousErrorActionPreference = $ErrorActionPreference
+  try {
+    $ErrorActionPreference = 'Continue'
+    & node (Join-Path $PSScriptRoot 'review-workbook.mjs') --accepted-json $acceptedPath --report-json $validationReportPath 2>$null | Out-Null
+    $validationExitCode = $LASTEXITCODE
+  } finally {
+    $ErrorActionPreference = $previousErrorActionPreference
+  }
+  if ($validationExitCode -ne 0) {
+    if (Test-Path -LiteralPath $validationReportPath) {
+      $report = Get-Content -Raw -Encoding UTF8 -LiteralPath $validationReportPath | ConvertFrom-Json
+      $details = [string[]]@($report.errors)
+      $message = [string]$report.title + [Environment]::NewLine + [string]::Join([Environment]::NewLine, $details)
+    } else {
+      $message = '审核校验失败，但未生成诊断报告。请运行 npm run review:validate 查看原因。'
+    }
+    Write-Result $message
+    [Console]::Error.WriteLine($message)
+    exit 1
+  }
   $rows = Get-Content -Raw -LiteralPath $acceptedPath | ConvertFrom-Json
   if (@($rows).Count -eq 0) {
     $message = '没有状态为“已接受”的条目。'
@@ -51,10 +68,11 @@ try {
 } catch {
   $message = $_.Exception.Message
   Write-Result $message
-  Write-Error $message
+  [Console]::Error.WriteLine($message)
   exit 1
 } finally {
   Remove-Item -LiteralPath $acceptedPath -ErrorAction SilentlyContinue
+  Remove-Item -LiteralPath $validationReportPath -ErrorAction SilentlyContinue
   if ($book) { try { $book.Close($false) } catch {} }
   if ($excel) { try { $excel.Quit() } catch {} }
 }

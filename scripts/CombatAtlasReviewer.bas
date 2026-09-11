@@ -22,6 +22,7 @@ Public Sub ApproveIntoMainWorkbook()
     Else
         output = Trim(process.StdOut.ReadAll & vbCrLf & process.StdErr.ReadAll)
     End If
+    If Len(output) = 0 Then output = "Promotion failed without diagnostics. Run npm run review:validate."
     On Error Resume Next
     Kill resultPath
     On Error GoTo Failed
