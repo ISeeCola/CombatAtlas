@@ -27,8 +27,8 @@ for (const row of accepted) {
 
 const catalogRows = review.rows.map((row) => `| ${row.sourceId || '—'} | ${row['中文标题']} | ${row['审核状态']} | ${row['正式总分'] || '—'} | ${row['来源']} |`).join('\n');
 await fs.writeFile(path.join(root, 'catalog.md'), `# CombatAtlas 策展目录\n\n网页展示 ${sourceDocument.records.length} 条；审核 accepted ${accepted.length} 条；已入库 ${(byStatus['已入库'] ?? []).length} 条。\n\n| sourceId | 标题 | 审核状态 | 正式分 | 来源 |\n|---|---|---:|---:|---|\n${catalogRows}\n`, 'utf8');
-const pending = review.rows.filter((row) => !['已接受','已入库','已拒绝','重复'].includes(String(row['审核状态']).trim()));
-await fs.writeFile(path.join(root, 'inbox.md'), `# 待处理摘要\n\n生成时间：2026-09-11（Asia/Hong_Kong）\n\n${pending.map((row) => `- **${row['中文标题']}** — ${row['审核状态']}；${row['审核备注']}`).join('\n')}\n`, 'utf8');
+const pending = review.rows.filter((row) => !['已接受','已入库','重复'].includes(String(row['审核状态']).trim()));
+await fs.writeFile(path.join(root, 'inbox.md'), `# 待处理摘要\n\n生成时间：2026-09-11（Asia/Hong_Kong）\n\n${pending.map((row) => `- **${row['中文标题']}** — ${row['审核状态']}；${row['审核备注']}${row['评论'] ? `；评论/修改意见：${row['评论']}` : ''}`).join('\n')}\n`, 'utf8');
 const digest = crypto.createHash('sha256').update(JSON.stringify(review.rows)).digest('hex');
 await fs.writeFile(path.join(root, 'update-history.md'), `# 更新历史\n\n- 2026-09-11：全量审核 33 条；已接受 ${accepted.length}，候选 ${(byStatus['候选'] ?? []).length}，待人工复核 ${(byStatus['待人工复核'] ?? []).length}，重复 ${(byStatus['重复'] ?? []).length}。审核数据哈希：\`${digest}\`。\n`, 'utf8');
 console.log(JSON.stringify({ root, accepted: accepted.length, pending: pending.length, hash: digest }));

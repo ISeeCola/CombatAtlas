@@ -43,6 +43,7 @@ tsconfig.tsbuildinfo
 # local CombatAtlas truth sources and private curation state
 /source/combat_atlas_main.xlsm
 /source/combat_atlas_review.xlsm
+/source/backups/
 /automation/pending/
 /automation/private-audit/
 /.runtime/

@@ -23,7 +23,7 @@ try {
     if (($canonical -and $seen.ContainsKey($canonical.ToLowerInvariant())) -or ($platform -and $seen.ContainsKey($platform.ToLowerInvariant()))) { continue }
     $row = $table.ListRows.Add().Range
     $candidateId = if ($candidate.candidateId) { [string]$candidate.candidateId } else { 'cand-' + (Get-Date -Format 'yyyyMMdd') + '-' + ([Guid]::NewGuid().ToString('N').Substring(0,8)) }
-    $values = @{ '候选 ID'=$candidateId; '审核状态'='待人工复核'; '发现日期'=(Get-Date); '中文标题'=$candidate.title; '原标题'=$candidate.originalTitle; '作者'=$candidate.author; '来源'=$candidate.source; '原文 URL'=$candidate.url; '规范 URL'=$canonical; '平台 ID'=$platform; '发布年份'=$candidate.year; '语言'=$candidate.language; '媒介'=$candidate.medium; '建议来源层级'=$candidate.tier; '建议主题'=(@($candidate.topics) -join '；'); '证据状态'=$candidate.evidenceStatus; '短读证据'=$candidate.shortEvidence; '去重结果'='已与主表、review、catalog 和历史拒收记录去重'; '审核备注'=$candidate.reason }
+    $values = @{ '候选 ID'=$candidateId; '审核状态'='待人工复核'; '发现日期'=(Get-Date); '中文标题'=$candidate.title; '原标题'=$candidate.originalTitle; '作者'=$candidate.author; '来源'=$candidate.source; '原文 URL'=$candidate.url; '规范 URL'=$canonical; '平台 ID'=$platform; '发布年份'=$candidate.year; '语言'=$candidate.language; '媒介'=$candidate.medium; '建议来源层级'=$candidate.tier; '建议主题'=(@($candidate.topics) -join '；'); '证据状态'=$candidate.evidenceStatus; '短读证据'=$candidate.shortEvidence; '去重结果'='已与主表、review、catalog 和历史拒收记录去重'; '审核备注'=$candidate.reason; '评论'=$candidate.comment }
     foreach ($key in $values.Keys) { if ($headers.ContainsKey($key)) { $row.Cells(1,$headers[$key]).Value2=$values[$key] } }
     $seen[$canonical.ToLowerInvariant()]=$true; $added++
   }

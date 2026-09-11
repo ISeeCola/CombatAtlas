@@ -30,6 +30,8 @@
     "secondary": ["署名清晰的专业拆解", "公开课转录", "行业媒体访谈"],
     "reject": ["无作者聚合页", "洗稿", "只有观点没有案例", "无法找到原始出处"],
     "dedupeKeys": ["canonicalUrl", "normalizedTitle", "speakerAndEvent"],
+    "gdcVideoPreference": "遇到 GDC Vault 条目时，先检索 GDC 官方 YouTube 或其他官方公开录像；能取得视频时优先以公开视频链接作为收录入口，Vault 保留为会议信息、幻灯片或关联证据。",
+    "rejectionFeedback": "重新处理已拒绝条目前必须读取 review 的“评论”列，并逐项回应修改意见；不得另建重复候选规避评论。",
     "copyright": "仅保存元数据、自写摘要与短评，不镜像全文、图片或付费内容"
   }
 }
