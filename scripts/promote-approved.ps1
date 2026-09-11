@@ -1,6 +1,7 @@
 ﻿param(
   [string]$ReviewPath = (Join-Path (Split-Path $PSScriptRoot -Parent) 'source\combat_atlas_review.xlsm'),
-  [string]$MainPath = (Join-Path (Split-Path $PSScriptRoot -Parent) 'source\combat_atlas_main.xlsm')
+  [string]$MainPath = (Join-Path (Split-Path $PSScriptRoot -Parent) 'source\combat_atlas_main.xlsm'),
+  [string]$ResultPath = ''
 )
 $ErrorActionPreference = 'Stop'
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
@@ -9,11 +10,19 @@ $pendingDir = Join-Path $root 'automation\pending'
 New-Item -ItemType Directory -Force -Path $pendingDir | Out-Null
 $acceptedPath = Join-Path $pendingDir ("accepted-{0}.json" -f [Guid]::NewGuid().ToString('N'))
 $env:COMBAT_ATLAS_REVIEW = $ReviewPath
+function Write-Result([string]$Text) {
+  if ($ResultPath) { [System.IO.File]::WriteAllText($ResultPath, $Text, [System.Text.Encoding]::Unicode) }
+}
 try {
-  & node (Join-Path $PSScriptRoot 'review-workbook.mjs') --accepted-json $acceptedPath
-  if ($LASTEXITCODE -ne 0) { throw '审核表校验失败' }
+  $validationOutput = @(& node (Join-Path $PSScriptRoot 'review-workbook.mjs') --accepted-json $acceptedPath 2>&1)
+  if ($LASTEXITCODE -ne 0) { throw ($validationOutput -join [Environment]::NewLine) }
   $rows = Get-Content -Raw -LiteralPath $acceptedPath | ConvertFrom-Json
-  if (@($rows).Count -eq 0) { Write-Output '没有状态为“已接受”的条目。'; exit 0 }
+  if (@($rows).Count -eq 0) {
+    $message = '没有状态为“已接受”的条目。'
+    Write-Result $message
+    Write-Output $message
+    return
+  }
   $excel = New-Object -ComObject Excel.Application
   $excel.Visible = $false; $excel.DisplayAlerts = $false
   $book = $excel.Workbooks.Open((Resolve-Path -LiteralPath $MainPath).Path)
@@ -36,7 +45,14 @@ try {
   }
   $book.Save(); $book.Close($true); $excel.Quit()
   & node (Join-Path $PSScriptRoot 'sync-curation-docs.mjs')
-  Write-Output "已迁移 $added 条到本地主表；尚未发布网页。"
+  $message = "已迁移 $added 条到本地主表；尚未发布网页。"
+  Write-Result $message
+  Write-Output $message
+} catch {
+  $message = $_.Exception.Message
+  Write-Result $message
+  Write-Error $message
+  exit 1
 } finally {
   Remove-Item -LiteralPath $acceptedPath -ErrorAction SilentlyContinue
   if ($book) { try { $book.Close($false) } catch {} }

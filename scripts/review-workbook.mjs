@@ -31,9 +31,11 @@ export function validateReview(rows) {
   const candidateIds = new Set();
   const sourceIds = new Set();
   for (const [index, row] of rows.entries()) {
-    const label = `第 ${index + 1} 条`;
+    const title = clean(row['中文标题']) || '未命名条目';
+    const rowSourceId = clean(row.sourceId);
+    const label = `记录 ${index + 1}「${title}」${rowSourceId ? ` (${rowSourceId})` : ''}`;
     const candidateId = clean(row['候选 ID']);
-    const sourceId = clean(row.sourceId);
+    const sourceId = rowSourceId;
     const status = clean(row['审核状态']);
     if (!candidateId) errors.push(`${label}缺少候选 ID`);
     else if (candidateIds.has(candidateId)) errors.push(`${label}候选 ID 重复：${candidateId}`);
@@ -49,8 +51,11 @@ export function validateReview(rows) {
     if (status === '已接受' || status === '已入库') {
       const formal = Number(row['正式总分']);
       const required = ['深读证据','去重结果','适用边界','可迁移假设','最小验证动作','观察指标','失败信号','归档路径'];
-      if (!Number.isFinite(formal) || formal < 70 || formal > 100) errors.push(`${label}正式评分未达 70 分门槛`);
-      for (const field of required) if (!clean(row[field])) errors.push(`${label}已接受但缺少${field}`);
+      const missing = required.filter((field) => !clean(row[field]));
+      const issues = [];
+      if (!Number.isFinite(formal) || formal < 70 || formal > 100) issues.push('正式总分未达到 70');
+      if (missing.length) issues.push(`缺少：${missing.join('、')}`);
+      if (issues.length) errors.push(`${label}：${issues.join('；')}`);
     }
   }
   return errors;
@@ -59,7 +64,7 @@ export function validateReview(rows) {
 if (process.argv.includes('--validate')) {
   const { rows, workbookPath } = readReview();
   const errors = validateReview(rows);
-  if (errors.length) { console.error(errors.join('\n')); process.exit(1); }
+  if (errors.length) { console.error(`审核校验未通过：\n${errors.join('\n')}`); process.exit(1); }
   const counts = Object.groupBy(rows, (row) => clean(row['审核状态']));
   console.log(JSON.stringify({ workbookPath, total: rows.length, statuses: Object.fromEntries(Object.entries(counts).map(([key, value]) => [key, value.length])) }));
 }
@@ -69,7 +74,7 @@ if (process.argv.includes('--accepted-json')) {
   if (!outputPath) throw new Error('--accepted-json 需要输出路径');
   const { rows } = readReview();
   const errors = validateReview(rows);
-  if (errors.length) throw new Error(errors.join('\n'));
+  if (errors.length) { console.error(`入库安全门未通过：\n${errors.join('\n')}`); process.exit(2); }
   const accepted = rows.filter((row) => String(row['审核状态']).trim() === '已接受');
   fs.writeFileSync(outputPath, JSON.stringify(accepted, null, 2));
   console.log(JSON.stringify({ accepted: accepted.length, outputPath }));
