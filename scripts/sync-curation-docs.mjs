@@ -2,12 +2,13 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import sourceDocument from '../app/generated-sources.json' with { type: 'json' };
-import { readReview, validateReview } from './review-workbook.mjs';
+import { readReview, validateReview, collectReviewAdvisories } from './review-workbook.mjs';
 
 const root = path.resolve('..', 'docs', 'research', 'curated-game-design');
 const review = readReview();
 const errors = validateReview(review.rows);
 if (errors.length) throw new Error(errors.join('\n'));
+const advisories = collectReviewAdvisories(review.rows);
 const byStatus = Object.groupBy(review.rows, (row) => String(row['审核状态']).trim());
 const accepted = review.rows.filter((row) => ['已接受','已入库'].includes(String(row['审核状态']).trim()));
 const esc = (value) => String(value ?? '').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
@@ -15,6 +16,7 @@ await fs.mkdir(path.join(root, 'items'), { recursive: true });
 
 for (const row of accepted) {
   const id = String(row.sourceId).trim();
+  if (!id) continue;
   const title = String(row['中文标题']).trim();
   const original = String(row['原标题']).trim();
   const markdown = `# ${title}\n\n- sourceId：\`${id}\`\n- 原标题：${original}\n- 作者 / 来源：${row['作者']} / ${row['来源']}\n- 正式评分：${row['正式总分']}/100\n- 证据：${row['深读证据']}\n- 规范 URL：${row['规范 URL']}\n\n## 摘要\n\n${row['摘要']}\n\n## 核心方法\n\n${row['核心方法']}\n\n## 适用边界\n\n${row['适用边界']}\n\n## 实验卡\n\n- 假设：${row['可迁移假设']}\n- 动作：${row['最小验证动作']}\n- 指标：${row['观察指标']}\n- 失败信号：${row['失败信号']}\n`;
@@ -26,9 +28,10 @@ for (const row of accepted) {
 }
 
 const catalogRows = review.rows.map((row) => `| ${row.sourceId || '—'} | ${row['中文标题']} | ${row['审核状态']} | ${row['正式总分'] || '—'} | ${row['来源']} |`).join('\n');
-await fs.writeFile(path.join(root, 'catalog.md'), `# CombatAtlas 策展目录\n\n网页展示 ${sourceDocument.records.length} 条；审核 accepted ${accepted.length} 条；已入库 ${(byStatus['已入库'] ?? []).length} 条。\n\n| sourceId | 标题 | 审核状态 | 正式分 | 来源 |\n|---|---|---:|---:|---|\n${catalogRows}\n`, 'utf8');
-const pending = review.rows.filter((row) => !['已接受','已入库','重复'].includes(String(row['审核状态']).trim()));
-await fs.writeFile(path.join(root, 'inbox.md'), `# 待处理摘要\n\n生成时间：2026-09-11（Asia/Hong_Kong）\n\n${pending.map((row) => `- **${row['中文标题']}** — ${row['审核状态']}；${row['审核备注']}${row['评论'] ? `；评论/修改意见：${row['评论']}` : ''}`).join('\n')}\n`, 'utf8');
+await fs.writeFile(path.join(root, 'catalog.md'), `# CombatAtlas 策展目录\n\n网页展示 ${sourceDocument.records.length} 条；人工已接受 ${accepted.length} 条；已入库 ${(byStatus['已入库'] ?? []).length} 条；自动审核建议 ${advisories.length} 条。\n\n| sourceId | 标题 | 审核状态 | 正式分 | 来源 |\n|---|---|---:|---:|---|\n${catalogRows}\n`, 'utf8');
+const pending = review.rows.filter((row) => ['待复核','待修改'].includes(String(row['审核状态']).trim()));
+const hongKongDate = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Hong_Kong', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+await fs.writeFile(path.join(root, 'inbox.md'), `# 待处理摘要\n\n生成时间：${hongKongDate}（Asia/Hong_Kong）\n\n${pending.length ? pending.map((row) => `- **${row['中文标题']}** — ${row['审核状态']}；${row['审核备注'] || '暂无自动备注'}${row['评论'] ? `；人工评论：${row['评论']}` : ''}`).join('\n') : '当前没有待复核或待修改条目。'}\n`, 'utf8');
 const digest = crypto.createHash('sha256').update(JSON.stringify(review.rows)).digest('hex');
-await fs.writeFile(path.join(root, 'update-history.md'), `# 更新历史\n\n- 2026-09-11：全量审核 33 条；已接受 ${accepted.length}，候选 ${(byStatus['候选'] ?? []).length}，待人工复核 ${(byStatus['待人工复核'] ?? []).length}，重复 ${(byStatus['重复'] ?? []).length}。审核数据哈希：\`${digest}\`。\n`, 'utf8');
+await fs.writeFile(path.join(root, 'update-history.md'), `# 更新历史\n\n- ${hongKongDate}：同步审核表 ${review.rows.length} 条；待复核 ${(byStatus['待复核'] ?? []).length}，待修改 ${(byStatus['待修改'] ?? []).length}，已接受 ${(byStatus['已接受'] ?? []).length}，已入库 ${(byStatus['已入库'] ?? []).length}，已拒绝 ${(byStatus['已拒绝'] ?? []).length}，重复 ${(byStatus['重复'] ?? []).length}；自动审核建议 ${advisories.length}。审核数据哈希：\`${digest}\`。\n`, 'utf8');
 console.log(JSON.stringify({ root, accepted: accepted.length, pending: pending.length, hash: digest }));

@@ -1,4 +1,4 @@
-param(
+﻿param(
   [string]$ReviewTemplate = (Join-Path (Split-Path $PSScriptRoot -Parent) 'outputs\review-build\combat_atlas_review.xlsx'),
   [string]$ReviewPath = (Join-Path (Split-Path $PSScriptRoot -Parent) 'source\combat_atlas_review.xlsm'),
   [string]$MainPath = (Join-Path (Split-Path $PSScriptRoot -Parent) 'source\combat_atlas_main.xlsm')
@@ -13,13 +13,17 @@ try {
   $excel = New-Object -ComObject Excel.Application
   $excel.Visible = $false; $excel.DisplayAlerts = $false
 
-  $review = $excel.Workbooks.Open((Resolve-Path -LiteralPath $ReviewTemplate).Path)
+  $reviewIsExisting = Test-Path -LiteralPath $ReviewPath
+  $review = if ($reviewIsExisting) { $excel.Workbooks.Open((Resolve-Path -LiteralPath $ReviewPath).Path) } else { $excel.Workbooks.Open((Resolve-Path -LiteralPath $ReviewTemplate).Path) }
+  foreach ($component in @($review.VBProject.VBComponents)) { if ($component.Name -eq 'CombatAtlasReviewer') { $review.VBProject.VBComponents.Remove($component); break } }
   $review.VBProject.VBComponents.Import((Resolve-Path -LiteralPath (Join-Path $PSScriptRoot 'CombatAtlasReviewer.bas')).Path) | Out-Null
   $sheet = $review.Worksheets.Item('待审批文章')
-  $target = $sheet.Range('A4:C5')
-  $button = $sheet.Buttons().Add($target.Left, $target.Top, $target.Width, $target.Height)
-  $button.Caption = '批准入库'; $button.OnAction = 'ApproveIntoMainWorkbook'; $button.Font.Name = 'Arial'; $button.Font.Size = 12; $button.Font.Bold = $true
-  $review.SaveAs([System.IO.Path]::GetFullPath($ReviewPath), 52)
+  if ($sheet.Buttons().Count -eq 0) {
+    $target = $sheet.Range('A4:C5')
+    $button = $sheet.Buttons().Add($target.Left, $target.Top, $target.Width, $target.Height)
+    $button.Caption = '批准入库'; $button.OnAction = 'ApproveIntoMainWorkbook'; $button.Font.Name = 'Arial'; $button.Font.Size = 12; $button.Font.Bold = $true
+  }
+  if ($reviewIsExisting) { $review.Save() } else { $review.SaveAs([System.IO.Path]::GetFullPath($ReviewPath), 52) }
   $review.Close($true); $review = $null
 
   $main = $excel.Workbooks.Open((Resolve-Path -LiteralPath $MainPath).Path)

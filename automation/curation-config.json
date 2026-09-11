@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "timezone": "Asia/Hong_Kong",
   "defaultSchedule": "daily-09:00",
   "queries": [
@@ -31,7 +31,10 @@
     "reject": ["无作者聚合页", "洗稿", "只有观点没有案例", "无法找到原始出处"],
     "dedupeKeys": ["canonicalUrl", "normalizedTitle", "speakerAndEvent"],
     "gdcVideoPreference": "遇到 GDC Vault 条目时，先检索 GDC 官方 YouTube 或其他官方公开录像；能取得视频时优先以公开视频链接作为收录入口，Vault 保留为会议信息、幻灯片或关联证据。",
-    "rejectionFeedback": "重新处理已拒绝条目前必须读取 review 的“评论”列，并逐项回应修改意见；不得另建重复候选规避评论。",
+    "reviewStatuses": ["待复核", "待修改", "已接受", "已入库", "已拒绝", "重复"],
+    "reworkPolicy": "每轮优先处理最多3条尚未处理当前评论SHA-256的待修改记录；成功转待复核，失败保持待修改；不占每日3条新增额度。",
+    "terminalDedupe": ["已拒绝", "重复"],
+    "automationCeiling": "自动化只能写入待复核或在待修改/待复核间推进；不得设置已接受、已入库或已拒绝。",
     "copyright": "仅保存元数据、自写摘要与短评，不镜像全文、图片或付费内容"
   }
 }

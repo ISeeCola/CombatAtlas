@@ -14,6 +14,7 @@
     "sources:verify-generated": "node scripts/sources-workbook.mjs --verify-generated",
     "docs:sync": "node scripts/sync-curation-docs.mjs",
     "review:validate": "node scripts/review-workbook.mjs --validate",
+    "review:migrate": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/migrate-review-workflow.ps1",
     "lint": "oxlint app/page.tsx app/combat-atlas-client.tsx app/sources.ts app/layout.tsx lib/personal-state.ts scripts/*.mjs",
     "format": "oxfmt"
   },
