@@ -89,7 +89,18 @@ Private Function ReadResult(ByVal filePath As String) As String
 End Function
 
 Private Function TempFile(ByVal label As String, ByVal extension As String) As String
-    TempFile = Environ$("TEMP") & "\CombatAtlas-" & label & "-" & Format(Now, "yyyymmddhhnnss") & "-" & CStr(Int(Rnd() * 100000)) & extension
+    Randomize
+    TempFile = RuntimeFolder() & "\CombatAtlas-" & label & "-" & Format(Now, "yyyymmddhhnnss") & "-" & CStr(Int(Rnd() * 100000)) & extension
+End Function
+
+Private Function RuntimeFolder() As String
+    Dim fileSystem As Object, rootPath As String, folderPath As String
+    Set fileSystem = CreateObject("Scripting.FileSystemObject")
+    rootPath = ThisWorkbook.Path & "\..\.runtime"
+    folderPath = rootPath & "\ipc"
+    If Not fileSystem.FolderExists(rootPath) Then fileSystem.CreateFolder rootPath
+    If Not fileSystem.FolderExists(folderPath) Then fileSystem.CreateFolder folderPath
+    RuntimeFolder = folderPath
 End Function
 
 Private Sub DeleteIfExists(ByVal filePath As String)

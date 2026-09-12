@@ -1,13 +1,24 @@
 ﻿param(
-  [string]$WorkbookPath = (Join-Path (Split-Path $PSScriptRoot -Parent) 'source\combat_atlas_main.xlsm'),
+  [string]$WorkbookPath = '',
   [string]$ProgressPath = '',
+  [string]$ResultPath = '',
   [switch]$DryRun
 )
 
 $ErrorActionPreference = 'Stop'
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 $root = Split-Path $PSScriptRoot -Parent
+if (-not $WorkbookPath) { $WorkbookPath = Join-Path $root 'source\combat_atlas_main.xlsm' }
 Set-Location $root
+$runtimeRoot = Join-Path $root '.runtime\publish'
+$logRoot = Join-Path $runtimeRoot 'logs'
+$tempRoot = Join-Path $runtimeRoot 'temp'
+New-Item -ItemType Directory -Force -Path $logRoot,$tempRoot | Out-Null
+$env:TEMP = $tempRoot
+$env:TMP = $tempRoot
+$env:npm_config_cache = Join-Path $runtimeRoot 'npm-cache'
+$logPath = Join-Path $logRoot ("publish-{0}.log" -f (Get-Date -Format 'yyyyMMdd-HHmmss'))
+$script:deploymentComplete = $false
 
 function Invoke-Git([string[]]$Arguments) {
   $result = & git @Arguments 2>&1
@@ -26,6 +37,13 @@ function Set-PublishProgress([int]$Percent, [string]$Message) {
   )
 }
 
+function Set-PublishResult([string]$Message) {
+  if ([string]::IsNullOrWhiteSpace($ResultPath)) { return }
+  $resultDirectory = Split-Path -Parent $ResultPath
+  if ($resultDirectory) { New-Item -ItemType Directory -Force -Path $resultDirectory | Out-Null }
+  [System.IO.File]::WriteAllText($ResultPath, $Message, [System.Text.Encoding]::Unicode)
+}
+
 function Get-SharedFileSha256([string]$Path) {
   $share = [System.IO.FileShare]::ReadWrite -bor [System.IO.FileShare]::Delete
   $stream = [System.IO.File]::Open($Path, [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read, $share)
@@ -37,6 +55,16 @@ function Get-SharedFileSha256([string]$Path) {
     finally { $sha256.Dispose() }
   }
   finally { $stream.Dispose() }
+}
+
+function Copy-SharedFile([string]$Source, [string]$Destination) {
+  $share = [System.IO.FileShare]::ReadWrite -bor [System.IO.FileShare]::Delete
+  $input = [System.IO.File]::Open($Source, [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read, $share)
+  try {
+    $output = [System.IO.File]::Open($Destination, [System.IO.FileMode]::CreateNew, [System.IO.FileAccess]::Write, [System.IO.FileShare]::None)
+    try { $input.CopyTo($output) } finally { $output.Dispose() }
+  }
+  finally { $input.Dispose() }
 }
 
 function Get-GitHubHeaders {
@@ -56,6 +84,8 @@ function Get-GitHubHeaders {
   }
   return $headers
 }
+
+function Invoke-Publish {
 
 Set-PublishProgress 3 '初始化并检查工作簿'
 if (-not (Test-Path -LiteralPath $WorkbookPath)) { throw "找不到工作簿：$WorkbookPath" }
@@ -77,10 +107,10 @@ if ($remote.sha -ne $localSha) {
 }
 
 Set-PublishProgress 20 '备份本地主表'
-$backupDir = Join-Path $env:LOCALAPPDATA 'CombatAtlas\Backups'
+$backupDir = Join-Path $root 'source\backups'
 New-Item -ItemType Directory -Force -Path $backupDir | Out-Null
 $backupPath = Join-Path $backupDir ("CombatAtlas-{0}.xlsm" -f (Get-Date -Format 'yyyyMMdd-HHmmss'))
-Copy-Item -LiteralPath $WorkbookPath -Destination $backupPath
+Copy-SharedFile -Source $WorkbookPath -Destination $backupPath
 
 Set-PublishProgress 28 '生成并校验网页数据'
 $env:COMBAT_ATLAS_WORKBOOK = $WorkbookPath
@@ -105,33 +135,50 @@ Set-PublishProgress 48 '运行代码规范检查'
 & npm run lint
 if ($LASTEXITCODE -ne 0) { throw 'Lint 未通过' }
 Set-PublishProgress 56 '运行 TypeScript 类型检查'
-& npx tsc --noEmit --incremental false
+& npm run typecheck
 if ($LASTEXITCODE -ne 0) { throw '类型检查未通过' }
-Set-PublishProgress 65 '构建静态网页；此阶段可能需要数分钟'
-$buildStarted = Get-Date
-$buildLog = Join-Path $env:TEMP ("CombatAtlas-build-{0}.log" -f [Guid]::NewGuid().ToString('N'))
-try {
-  $buildCommand = "npm run build > `"$buildLog`" 2>&1"
-  $buildProcess = Start-Process -FilePath 'cmd.exe' -ArgumentList @('/d', '/s', '/c', $buildCommand) -Wait -PassThru -WindowStyle Hidden
-  $buildExitCode = $buildProcess.ExitCode
-  $buildText = [System.IO.File]::ReadAllText($buildLog)
-}
-finally { Remove-Item -LiteralPath $buildLog -ErrorAction SilentlyContinue }
+Set-PublishProgress 61 '运行自动化测试'
+& npm test
+if ($LASTEXITCODE -ne 0) { throw '自动化测试未通过' }
+Set-PublishProgress 65 '检查高危依赖'
+& npm run audit:high
+if ($LASTEXITCODE -ne 0) { throw '依赖安全检查未通过' }
+Set-PublishProgress 69 '构建静态网页；此阶段可能需要数分钟'
+$buildLog = Join-Path $tempRoot ("CombatAtlas-build-{0}.log" -f [Guid]::NewGuid().ToString('N'))
+$buildCommand = "npm run build > `"$buildLog`" 2>&1"
+$buildProcess = Start-Process -FilePath 'cmd.exe' -ArgumentList @('/d', '/s', '/c', $buildCommand) -Wait -PassThru -WindowStyle Hidden
+$buildExitCode = $buildProcess.ExitCode
+$buildText = [System.IO.File]::ReadAllText($buildLog)
 if ($buildExitCode -ne 0) {
-  $artifact = Get-Item 'dist/client/index.html' -ErrorAction SilentlyContinue
-  $knownWindowsExit = $buildText.Contains('Build complete.') -and $buildText.Contains('UV_HANDLE_CLOSING') -and $artifact -and $artifact.LastWriteTime -ge $buildStarted
-  if (-not $knownWindowsExit) { throw "正式构建失败：$buildText" }
+  throw "正式构建失败，完整日志：$buildLog`n$buildText"
 }
-if ($DryRun) { Set-PublishProgress 100 '演练完成，未提交或推送'; Write-Output "演练通过：共 $($report.total) 条，发布 $($report.published) 条；未提交或推送。"; exit 0 }
+if ($DryRun) {
+  $resultMessage = "演练完成。`r`n共 $($report.total) 条，发布 $($report.published) 条。`r`n未提交或推送。"
+  Set-PublishProgress 100 '演练完成，未提交或推送'
+  Set-PublishResult $resultMessage
+  Write-Output $resultMessage
+  return
+}
 
 Set-PublishProgress 75 '准备 Git 提交'
 & git add -- app/generated-sources.json app/source-manifest.json
 if ($LASTEXITCODE -ne 0) { throw '无法暂存发布文件' }
 & git diff --cached --quiet
-if ($LASTEXITCODE -eq 0) { Set-PublishProgress 100 '没有需要发布的变化'; Write-Output '没有需要发布的变化。'; exit 0 }
+$hasDataChanges = $LASTEXITCODE -ne 0
 $message = "Update CombatAtlas sources $(Get-Date -Format 'yyyy-MM-dd HH:mm')"
-Invoke-Git @('commit', '-m', $message) | Out-Null
+if ($hasDataChanges) {
+  Invoke-Git @('commit', '-m', $message) | Out-Null
+}
 $publishedSha = Invoke-Git @('rev-parse', 'HEAD')
+$aheadCount = [int](Invoke-Git @('rev-list', '--count', "$($remote.sha)..HEAD"))
+if ($aheadCount -eq 0) {
+  $resultMessage = '没有需要发布的变化。'
+  Set-PublishProgress 100 '没有需要发布的变化'
+  Set-PublishResult $resultMessage
+  Write-Output $resultMessage
+  return
+}
+if (-not $hasDataChanges) { $message = "Publish $aheadCount pending CombatAtlas commit(s)" }
 
 Set-PublishProgress 82 '推送到 GitHub'
 $previousErrorActionPreference = $ErrorActionPreference
@@ -163,12 +210,31 @@ if ($run.conclusion -ne 'success') { throw "代码已推送，但 GitHub Pages �
 Set-PublishProgress 97 '验证线上页面'
 $page = Invoke-WebRequest -Uri 'https://iseecola.github.io/CombatAtlas/' -UseBasicParsing
 if ($page.StatusCode -ne 200) { throw 'GitHub Pages 未返回成功状态' }
+$script:deploymentComplete = $true
 $auditDir = Join-Path $root 'automation\private-audit'
 New-Item -ItemType Directory -Force -Path $auditDir | Out-Null
 $workbookHash = Get-SharedFileSha256 -Path $WorkbookPath
 $audit = [ordered]@{ generatedAt = (Get-Date).ToString('o'); workbookSha256 = $workbookHash; dataSha256 = $report.dataSha256; commit = $publishedSha; deployment = $run.html_url }
 $audit | ConvertTo-Json | Set-Content -Encoding UTF8 -LiteralPath (Join-Path $auditDir ("publish-{0}.json" -f (Get-Date -Format 'yyyyMMdd-HHmmss')))
 Set-PublishProgress 100 '发布完成'
-Write-Output "发布成功：$($publishedSha.Substring(0,7)) https://iseecola.github.io/CombatAtlas/"
+$resultMessage = "发布完成。`r`n提交：$($publishedSha.Substring(0,7))`r`n网址：https://iseecola.github.io/CombatAtlas/"
+Set-PublishResult $resultMessage
+Write-Output $resultMessage
+}
+
+try {
+  Start-Transcript -LiteralPath $logPath -Force | Out-Null
+  Invoke-Publish
+}
+catch {
+  $prefix = if ($script:deploymentComplete) { '网页已经发布，但本地审计未完成。' } else { '发布尚未完成。' }
+  $resultMessage = "$prefix`r`n$($_.Exception.Message)`r`n日志：$logPath"
+  Set-PublishResult $resultMessage
+  [Console]::Error.WriteLine($resultMessage)
+  exit 1
+}
+finally {
+  try { Stop-Transcript | Out-Null } catch { }
+}
 
 

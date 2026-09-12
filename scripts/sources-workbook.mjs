@@ -40,17 +40,37 @@ function integer(value, label, row, min, max, errors) {
 function isoDate(value, row, errors) {
   if (value instanceof Date && !Number.isNaN(value.valueOf())) return `${value.getUTCFullYear()}-${String(value.getUTCMonth() + 1).padStart(2, '0')}-${String(value.getUTCDate()).padStart(2, '0')}`;
   const valueText = text(value);
-  if (/^\d{4}-\d{2}-\d{2}$/.test(valueText) && !Number.isNaN(Date.parse(`${valueText}T00:00:00Z`))) return valueText;
+  if (isIsoDate(valueText)) return valueText;
   errors.push(`第 ${row} 行“收录日期”必须是有效日期`);
   return valueText;
 }
 function uniqueList(value, separator) { return [...new Set(text(value).split(separator).map((item) => item.trim()).filter(Boolean))]; }
 function serialize(document) { return `${JSON.stringify(document, null, 2)}\n`; }
 function digest(serialized) { return crypto.createHash('sha256').update(serialized, 'utf8').digest('hex'); }
+function isIsoDate(value) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const date = new Date(`${value}T00:00:00Z`);
+  return !Number.isNaN(date.valueOf()) && date.toISOString().slice(0, 10) === value;
+}
 function makeManifest(document, serialized) {
   return { schemaVersion: 1, generatorVersion: 2, recordCount: document.records.length, publishedCount: document.records.filter((record) => record.publicationStatus === 'published').length, dataSha256: digest(serialized) };
 }
-async function readJson(file, fallback) { try { return JSON.parse(await fs.readFile(file, 'utf8')); } catch { return fallback; } }
+async function readJson(file, fallback) {
+  try { return JSON.parse(await fs.readFile(file, 'utf8')); }
+  catch (error) {
+    if (error?.code === 'ENOENT') return fallback;
+    throw new Error(`无法读取 JSON：${file}\n${error.message}`, { cause: error });
+  }
+}
+async function writeAtomic(file, content) {
+  const temporary = `${file}.${process.pid}.${crypto.randomUUID()}.tmp`;
+  await fs.writeFile(temporary, content, 'utf8');
+  try { await fs.rename(temporary, file); }
+  catch (error) {
+    await fs.rm(temporary, { force: true });
+    throw error;
+  }
+}
 
 function validateDocument(document) {
   const errors = [];
@@ -69,8 +89,11 @@ function validateDocument(document) {
     if (!Number.isInteger(record.year) || record.year < 1900 || record.year > 2100) errors.push(`年份无效：${record.id}`);
     if (!Number.isInteger(record.readingTime) || record.readingTime < 1) errors.push(`阅读时间无效：${record.id}`);
     if (!Number.isInteger(record.curatorScore) || record.curatorScore < 1 || record.curatorScore > 5) errors.push(`展示价值无效：${record.id}`);
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(record.addedAt)) errors.push(`收录日期无效：${record.id}`);
-    if (!Array.isArray(record.topics) || !record.topics.length || !Array.isArray(record.takeaways) || !record.takeaways.length) errors.push(`主题或核心结论为空：${record.id}`);
+    if (!isIsoDate(record.addedAt)) errors.push(`收录日期无效：${record.id}`);
+    if (typeof record.featured !== 'boolean') errors.push(`精选状态无效：${record.id}`);
+    if (record.originalTitle != null && typeof record.originalTitle !== 'string') errors.push(`原标题无效：${record.id}`);
+    if (!Array.isArray(record.topics) || !record.topics.length || record.topics.some((item) => typeof item !== 'string' || !item.trim())) errors.push(`主题无效：${record.id}`);
+    if (!Array.isArray(record.takeaways) || !record.takeaways.length || record.takeaways.some((item) => typeof item !== 'string' || !item.trim())) errors.push(`核心结论无效：${record.id}`);
   }
   return errors;
 }
@@ -147,7 +170,7 @@ if (mode === 'check') {
   const existingManifest = await readJson(manifestPath, null);
   if (serialized !== previousSerialized || JSON.stringify(existingManifest) !== JSON.stringify(manifest)) throw new Error('本地主表与公开派生数据不一致，请点击工作簿中的“发布到网页”');
 } else if (mode === 'sync') {
-  await fs.writeFile(outputPath, serialized, 'utf8');
-  await fs.writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`, 'utf8');
+  await writeAtomic(outputPath, serialized);
+  await writeAtomic(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
 }
 console.log(JSON.stringify(report));

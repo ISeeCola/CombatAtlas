@@ -8,6 +8,9 @@ export type PersonalStateMap = Record<string, PersonalState>;
 
 export const PERSONAL_STATE_KEY = 'combat-atlas:personal-state:v1';
 export const PERSONAL_STATE_VERSION = 1;
+export const MAX_BACKUP_BYTES = 5 * 1024 * 1024;
+export const MAX_BACKUP_ITEMS = 10_000;
+const forbiddenSourceIds = new Set(['__proto__', 'prototype', 'constructor']);
 
 type PersonalStateBackup = {
   app: 'CombatAtlas';
@@ -23,6 +26,7 @@ function isValidItem(value: unknown): value is PersonalState & { sourceId: strin
     typeof item.sourceId === 'string' &&
     item.sourceId.length > 0 &&
     item.sourceId.length <= 128 &&
+    !forbiddenSourceIds.has(item.sourceId) &&
     Number.isInteger(item.rating) &&
     Number(item.rating) >= 0 &&
     Number(item.rating) <= 5 &&
@@ -37,9 +41,11 @@ export function readPersonalState(): PersonalStateMap {
   if (!raw) return {};
 
   const parsed = JSON.parse(raw) as unknown;
-  if (!parsed || typeof parsed !== 'object') throw new Error('invalid state');
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    throw new Error('invalid state');
+  }
 
-  const result: PersonalStateMap = {};
+  const result = Object.create(null) as PersonalStateMap;
   for (const [sourceId, value] of Object.entries(parsed)) {
     if (isValidItem({ sourceId, ...(value as object) })) {
       const item = value as PersonalState;
@@ -69,17 +75,23 @@ export function parseAndMergeBackup(
   raw: string,
   current: PersonalStateMap,
 ): PersonalStateMap {
+  if (new TextEncoder().encode(raw).byteLength > MAX_BACKUP_BYTES) {
+    throw new Error('backup too large');
+  }
   const parsed = JSON.parse(raw) as Partial<PersonalStateBackup>;
   if (
     parsed.app !== 'CombatAtlas' ||
     parsed.version !== PERSONAL_STATE_VERSION ||
+    typeof parsed.exportedAt !== 'string' ||
+    Number.isNaN(Date.parse(parsed.exportedAt)) ||
     !Array.isArray(parsed.items) ||
+    parsed.items.length > MAX_BACKUP_ITEMS ||
     !parsed.items.every(isValidItem)
   ) {
     throw new Error('invalid backup');
   }
 
-  const merged = { ...current };
+  const merged = Object.assign(Object.create(null), current) as PersonalStateMap;
   for (const item of parsed.items) {
     const existing = merged[item.sourceId];
     if (!existing || Date.parse(item.updatedAt) >= Date.parse(existing.updatedAt)) {

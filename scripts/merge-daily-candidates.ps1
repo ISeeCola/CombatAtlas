@@ -1,13 +1,15 @@
 ﻿param(
   [Parameter(Mandatory = $true)][string]$CandidateJson,
-  [string]$ReviewPath = (Join-Path (Split-Path $PSScriptRoot -Parent) 'source\combat_atlas_review.xlsm')
+  [string]$ReviewPath = ''
 )
 $ErrorActionPreference = 'Stop'
 $root = Split-Path $PSScriptRoot -Parent
+if (-not $ReviewPath) { $ReviewPath = Join-Path $root 'source\combat_atlas_review.xlsm' }
 $pendingDir = Join-Path $root 'automation\pending'
+$lockDir = Join-Path $root '.runtime\locks'
 $configPath = Join-Path $root 'automation\curation-config.json'
-New-Item -ItemType Directory -Force -Path $pendingDir | Out-Null
-$lockPath = "$ReviewPath.lock"
+New-Item -ItemType Directory -Force -Path $pendingDir,$lockDir | Out-Null
+$lockPath = Join-Path $lockDir 'combat-atlas-review.lock'
 $lock = $null; $excel = $null; $book = $null
 
 function Clean($Value) { if ($null -eq $Value) { return '' }; return ([string]$Value).Trim() }
@@ -15,6 +17,22 @@ function Get-UrlHost([string]$Value) {
   $text = Clean $Value
   if (-not $text) { return '' }
   try { return ([Uri]$text).Host.ToLowerInvariant().TrimEnd('.') } catch { return '' }
+}
+function Normalize-Url([string]$Value) {
+  $text = Clean $Value
+  if (-not $text) { return '' }
+  try {
+    $uri = [Uri]$text
+    if ($uri.Scheme -notin @('http','https')) { return '' }
+    $builder = [UriBuilder]::new($uri)
+    $builder.Scheme = $builder.Scheme.ToLowerInvariant()
+    $builder.Host = $builder.Host.ToLowerInvariant()
+    $builder.Fragment = ''
+    if (($builder.Scheme -eq 'https' -and $builder.Port -eq 443) -or ($builder.Scheme -eq 'http' -and $builder.Port -eq 80)) { $builder.Port = -1 }
+    $normalized = $builder.Uri.AbsoluteUri
+    if ($builder.Uri.AbsolutePath -ne '/') { $normalized = $normalized.TrimEnd('/') }
+    return $normalized
+  } catch { return '' }
 }
 function Test-BlockedSource([string]$Value, $BlockedSources) {
   $hostName = Get-UrlHost $Value
@@ -79,6 +97,18 @@ try {
     $label = Clean $candidate.title
     if (-not $label) { $label = Clean $candidate.candidateId }
     if (-not $label) { $label = '未命名候选' }
+    foreach ($field in @('title','author','source','url','year','language','medium','tier')) {
+      if (-not (Clean $candidate.$field)) { $candidateValidationErrors.Add("$label：缺少 $field") }
+    }
+    $year = 0
+    if (-not [int]::TryParse((Clean $candidate.year), [ref]$year) -or $year -lt 1970 -or $year -gt 2100) { $candidateValidationErrors.Add("$label：year 必须为 1970-2100 的整数") }
+    if ((Clean $candidate.language) -notin @('中文','英文','日文')) { $candidateValidationErrors.Add("$label：language 必须为中文、英文或日文") }
+    if ((Clean $candidate.medium) -notin @('文章','视频','演讲','书籍')) { $candidateValidationErrors.Add("$label：medium 必须为文章、视频、演讲或书籍") }
+    if ((Clean $candidate.tier) -notin @('一手','精选二手')) { $candidateValidationErrors.Add("$label：tier 必须为一手或精选二手") }
+    $cleanTopics = @($candidate.topics | ForEach-Object { ([string]$_).Trim() } | Where-Object { $_ })
+    if ($cleanTopics.Count -eq 0) { $candidateValidationErrors.Add("$label：缺少 topics") }
+    if (-not (Normalize-Url (Clean $candidate.url))) { $candidateValidationErrors.Add("$label：url 必须为有效的 HTTP/HTTPS 地址") }
+    if ((Clean $candidate.canonicalUrl) -and -not (Normalize-Url (Clean $candidate.canonicalUrl))) { $candidateValidationErrors.Add("$label：canonicalUrl 无效") }
     if (-not (Clean $candidate.summary)) { $candidateValidationErrors.Add("$label：缺少 summary") }
     $takeaways = @()
     foreach ($takeaway in @($candidate.keyTakeaways)) {
@@ -105,17 +135,28 @@ try {
   foreach ($required in @('候选 ID','审核状态','评论','审核备注','规范 URL','平台 ID')) { if (-not $headers.ContainsKey($required)) { throw "review 表缺少列：$required" } }
 
   $rowsByCandidate = @{}; $seen = @{}
+  $sourceDocument = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $root 'app\generated-sources.json') | ConvertFrom-Json
+  foreach ($sourceRecord in @($sourceDocument.records)) {
+    $sourceUrl = Normalize-Url (Clean $sourceRecord.url)
+    if ($sourceUrl) { $seen[$sourceUrl] = "main:$($sourceRecord.id)" }
+    if (Clean $sourceRecord.id) { $seen[(Clean $sourceRecord.id).ToLowerInvariant()] = "main:$($sourceRecord.id)" }
+  }
   if ($table.DataBodyRange) {
     for ($r=1; $r -le $table.DataBodyRange.Rows.Count; $r++) {
       $candidateId = Clean $table.DataBodyRange.Cells($r,$headers['候选 ID']).Value2
-      if ($candidateId) { $rowsByCandidate[$candidateId] = $r; $seen[$candidateId.ToLowerInvariant()] = $true }
-      foreach($key in @('规范 URL','平台 ID')) { $value=Clean $table.DataBodyRange.Cells($r,$headers[$key]).Value2; if($value){$seen[$value.ToLowerInvariant()]=$true} }
+      if ($candidateId) { $rowsByCandidate[$candidateId] = $r; $seen[$candidateId.ToLowerInvariant()] = $candidateId }
+      $reviewUrl = Normalize-Url (Clean $table.DataBodyRange.Cells($r,$headers['规范 URL']).Value2)
+      if ($reviewUrl) { $seen[$reviewUrl] = $candidateId }
+      $platformValue = Clean $table.DataBodyRange.Cells($r,$headers['平台 ID']).Value2
+      if ($platformValue) { $seen[$platformValue.ToLowerInvariant()] = $candidateId }
     }
   }
 
   $reworked = 0; $skippedRework = 0
   $allowedUpdateFields = @('中文标题','原标题','作者','来源','原文 URL','规范 URL','平台 ID','发布年份','语言','媒介','建议来源层级','建议主题','证据状态','短读证据','深读证据','去重结果','置信度','摘要','核心方法','证据与案例','术语对照','短摘录','适用边界','库内连接','实验落点','可迁移假设','最小验证动作','观察指标','失败信号','归档路径','阅读时间（分钟）','展示价值（1-5）','精选状态','入库日期')
   foreach ($result in $reworkResults) {
+    $updatedCanonical = ''
+    $updatedPlatform = ''
     $candidateId = Clean $result.candidateId
     if (-not $rowsByCandidate.ContainsKey($candidateId)) { throw "待修改记录不存在：$candidateId" }
     $rowIndex = $rowsByCandidate[$candidateId]
@@ -138,6 +179,17 @@ try {
           throw "$candidateId 不能以低质量线索来源作为已解决的$urlField：$($urlProperty.Value)"
         }
       }
+      $canonicalProperty = $result.updates.PSObject.Properties['规范 URL']
+      if ($canonicalProperty) {
+        $updatedCanonical = Normalize-Url (Clean $canonicalProperty.Value)
+        if (-not $updatedCanonical) { throw "$candidateId 的规范 URL 无效" }
+        if ($seen.ContainsKey($updatedCanonical) -and [string]$seen[$updatedCanonical] -ne $candidateId) { throw "$candidateId 的规范 URL 与 $($seen[$updatedCanonical]) 重复" }
+      }
+      $platformProperty = $result.updates.PSObject.Properties['平台 ID']
+      if ($platformProperty) {
+        $updatedPlatform = (Clean $platformProperty.Value).ToLowerInvariant()
+        if ($updatedPlatform -and $seen.ContainsKey($updatedPlatform) -and [string]$seen[$updatedPlatform] -ne $candidateId) { throw "$candidateId 的平台 ID 与 $($seen[$updatedPlatform]) 重复" }
+      }
     }
     if ($result.updates) {
       foreach ($property in $result.updates.PSObject.Properties) {
@@ -151,18 +203,20 @@ try {
     $combinedNote = (@($note,$marker) | Where-Object { $_ }) -join "`n"
     Set-Cell $range $headers '审核备注' $combinedNote
     if ($outcome -eq 'resolved') { Set-Cell $range $headers '审核状态' '待复核' }
+    if ($updatedCanonical) { $seen[$updatedCanonical] = $candidateId }
+    if ($updatedPlatform) { $seen[$updatedPlatform] = $candidateId }
     $reworked++
   }
 
   $added = 0; $skippedLowQuality = 0
   foreach ($candidate in $newCandidates) {
-    $canonical = Clean $candidate.canonicalUrl; if (-not $canonical) { $canonical = Clean $candidate.url }
+    $canonical = Normalize-Url (Clean $candidate.canonicalUrl); if (-not $canonical) { $canonical = Normalize-Url (Clean $candidate.url) }
     if ((Test-BlockedSource $canonical $blockedSources) -or (Test-BlockedSource (Clean $candidate.url) $blockedSources)) {
       $skippedLowQuality++
       continue
     }
     $platform = Clean $candidate.platformId
-    if (($canonical -and $seen.ContainsKey($canonical.ToLowerInvariant())) -or ($platform -and $seen.ContainsKey($platform.ToLowerInvariant()))) { continue }
+    if (($canonical -and $seen.ContainsKey($canonical)) -or ($platform -and $seen.ContainsKey($platform.ToLowerInvariant()))) { continue }
     $candidateId = if ($candidate.candidateId) { Clean $candidate.candidateId } else { 'cand-' + (Get-Date -Format 'yyyyMMdd') + '-' + ([Guid]::NewGuid().ToString('N').Substring(0,8)) }
     if ($seen.ContainsKey($candidateId.ToLowerInvariant())) { continue }
     $row = $table.ListRows.Add().Range
@@ -173,11 +227,15 @@ try {
     }
     $values = @{ '候选 ID'=$candidateId; '审核状态'='待复核'; '发现日期'=(Get-Date); '中文标题'=$candidate.title; '原标题'=$candidate.originalTitle; '作者'=$candidate.author; '来源'=$candidate.source; '原文 URL'=$candidate.url; '规范 URL'=$canonical; '平台 ID'=$platform; '发布年份'=$candidate.year; '语言'=$candidate.language; '媒介'=$candidate.medium; '建议来源层级'=$candidate.tier; '建议主题'=(@($candidate.topics) -join '；'); '证据状态'=$candidate.evidenceStatus; '短读证据'=$candidate.shortEvidence; '去重结果'='已与主表、review、catalog 和终态记录去重'; '摘要'=$candidate.summary; '核心方法'=($takeaways -join [char]10); '阅读时间（分钟）'=[int]$candidate.readingMinutes; '展示价值（1-5）'=[int]$candidate.displayValue; '精选状态'=(Convert-Featured $candidate.featured $candidate.title); '入库日期'=$candidate.addedAt; '审核备注'=$candidate.reason; '评论'=$candidate.comment }
     foreach ($key in $values.Keys) { Set-Cell $row $headers $key $values[$key] }
-    $seen[$candidateId.ToLowerInvariant()]=$true; if($canonical){$seen[$canonical.ToLowerInvariant()]=$true}; if($platform){$seen[$platform.ToLowerInvariant()]=$true}; $added++
+    $seen[$candidateId.ToLowerInvariant()]=$candidateId; if($canonical){$seen[$canonical]=$candidateId}; if($platform){$seen[$platform.ToLowerInvariant()]=$candidateId}; $added++
   }
   $book.Save()
   Write-Output "已处理待修改 $reworked 条（跳过已处理评论 $skippedRework 条），新增待复核 $added 条，跳过低质量线索 $skippedLowQuality 条；未修改主表或发布网页。"
+} catch {
+  $reason = $_.Exception.Message
+  if ($reason -notmatch '输入已保存到|当前输入已位于 pending') { $reason = Save-Pending ("候选批次处理失败：$reason。") }
+  throw $reason
 } finally {
-  if ($book) { try { $book.Close($true) } catch {} }; if ($excel) { try { $excel.Quit() } catch {} }
+  if ($book) { try { $book.Close($false) } catch {} }; if ($excel) { try { $excel.Quit() } catch {} }
   if ($lock) { $lock.Dispose(); Remove-Item -LiteralPath $lockPath -ErrorAction SilentlyContinue }
 }

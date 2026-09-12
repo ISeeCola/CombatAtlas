@@ -9,14 +9,15 @@ Public Sub PublishCombatAtlas()
     FillMissingSourceIds sheet.ListObjects("CombatAtlasSources")
     ThisWorkbook.Save
 
-    Dim scriptPath As String, progressPath As String
+    Dim scriptPath As String, progressPath As String, resultPath As String
     scriptPath = ThisWorkbook.Path & "\..\scripts\publish-from-excel.ps1"
     If Dir(scriptPath) = "" Then Err.Raise vbObjectError + 100, , Utf16(&H627E, &H4E0D, &H5230, &H53D1, &H5E03, &H811A, &H672C, &HFF1A) & scriptPath
-    progressPath = Environ$("TEMP") & "\CombatAtlas-publish-progress-" & Format(Now, "yyyymmddhhnnss") & ".txt"
+    progressPath = RuntimeFolder() & "\CombatAtlas-publish-progress-" & Format(Now, "yyyymmddhhnnss") & ".txt"
+    resultPath = RuntimeFolder() & "\CombatAtlas-publish-result-" & Format(Now, "yyyymmddhhnnss") & ".txt"
 
     Dim shell As Object, process As Object, command As String
     Set shell = CreateObject("WScript.Shell")
-    command = "powershell.exe -NoProfile -ExecutionPolicy Bypass -File """ & scriptPath & """ -WorkbookPath """ & ThisWorkbook.FullName & """ -ProgressPath """ & progressPath & """"
+    command = "powershell.exe -NoProfile -ExecutionPolicy Bypass -File """ & scriptPath & """ -WorkbookPath """ & ThisWorkbook.FullName & """ -ProgressPath """ & progressPath & """ -ResultPath """ & resultPath & """"
     Set process = shell.Exec(command)
     Do While process.Status = 0
         DoEvents
@@ -25,13 +26,16 @@ Public Sub PublishCombatAtlas()
     Loop
     ShowPublishProgress sheet, progressPath
 
-    Dim output As String
+    Dim output As String, displayOutput As String
     output = Trim(process.StdOut.ReadAll & vbCrLf & process.StdErr.ReadAll)
-    If process.ExitCode <> 0 Then Err.Raise vbObjectError + 101, , output
-    sheet.Range("E5").Value = Utf16(&H53D1, &H5E03, &H72B6, &H6001, &HFF1A) & Left(Replace(output, vbCrLf, " "), 180)
+    displayOutput = ReadUnicodeText(resultPath)
+    If Len(displayOutput) = 0 Then displayOutput = output
+    If process.ExitCode <> 0 Then Err.Raise vbObjectError + 101, , displayOutput
+    sheet.Range("E5").Value = Utf16(&H53D1, &H5E03, &H72B6, &H6001, &HFF1A) & Left(Replace(displayOutput, vbCrLf, " "), 180)
     ThisWorkbook.Save
     ClearPublishProgress progressPath
-    MsgBox output, vbInformation, "CombatAtlas " & Utf16(&H53D1, &H5E03, &H5B8C, &H6210)
+    DeleteTemporaryFile resultPath
+    MsgBox displayOutput, vbInformation, "CombatAtlas " & Utf16(&H53D1, &H5E03, &H5B8C, &H6210)
     Exit Sub
 
 Failed:
@@ -41,8 +45,38 @@ Failed:
     If Not sheet Is Nothing Then sheet.Range("E5").Value = Utf16(&H53D1, &H5E03, &H72B6, &H6001, &HFF1A, &H5931, &H8D25, &H20, &H2014, &H20) & Left(failureMessage, 150)
     ThisWorkbook.Save
     ClearPublishProgress progressPath
+    DeleteTemporaryFile resultPath
     On Error GoTo 0
     MsgBox failureMessage, vbCritical, "CombatAtlas " & Utf16(&H53D1, &H5E03, &H5931, &H8D25)
+End Sub
+
+Private Function RuntimeFolder() As String
+    Dim fileSystem As Object, rootPath As String, folderPath As String
+    Set fileSystem = CreateObject("Scripting.FileSystemObject")
+    rootPath = ThisWorkbook.Path & "\..\.runtime"
+    folderPath = rootPath & "\ipc"
+    If Not fileSystem.FolderExists(rootPath) Then fileSystem.CreateFolder rootPath
+    If Not fileSystem.FolderExists(folderPath) Then fileSystem.CreateFolder folderPath
+    RuntimeFolder = folderPath
+End Function
+
+Private Function ReadUnicodeText(ByVal filePath As String) As String
+    On Error Resume Next
+    If Len(filePath) = 0 Or Len(Dir$(filePath)) = 0 Then Exit Function
+    Dim fileSystem As Object, inputFile As Object
+    Set fileSystem = CreateObject("Scripting.FileSystemObject")
+    Set inputFile = fileSystem.OpenTextFile(filePath, 1, False, -1)
+    ReadUnicodeText = Trim$(inputFile.ReadAll)
+    inputFile.Close
+    On Error GoTo 0
+End Function
+
+Private Sub DeleteTemporaryFile(ByVal filePath As String)
+    On Error Resume Next
+    If Len(filePath) > 0 Then
+        If Len(Dir$(filePath)) > 0 Then Kill filePath
+    End If
+    On Error GoTo 0
 End Sub
 
 Private Sub ShowPublishProgress(ByVal sheet As Worksheet, ByVal progressPath As String)

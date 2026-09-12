@@ -23,9 +23,18 @@
 npm ci
 npm run sources:verify-generated
 npm run review:validate
+npm run docs:check
 npm run lint
-npx tsc --noEmit --incremental false
+npm run typecheck
+npm test
+npm run audit:high
 npm run build
 ```
+
+两份工作簿的宏统一由 `npm run workbooks:install-macros` 维护。工具会先在 `source/backups/` 创建备份，只替换 Main/Review 对应的 VBA 模块，并执行 Excel 原生编译；旧的一次性迁移脚本已移除。
+
+Excel 发布期间，进度通过工作簿状态区显示，弹窗只保留结果摘要。完整发布记录、构建输出和进程临时文件位于忽略目录 `.runtime/`，不再占用系统 TEMP。若文章数据没有变化但本地 `main` 仍领先远端，发布流程仍会推送这些待发布提交；只有本地与远端完全一致时才报告无变化。
+
+每日候选采用整批校验、再打开 Excel 的事务式流程。失败输入保存在 `automation/pending/`，工作簿不会留下部分写入；URL 规范化只折叠协议和域名大小写，保留可能区分资源的路径与查询字符串大小写。
 
 `generated-sources.json` 和 manifest 为派生文件，不应手工编辑。不同设备的个人状态继续通过网页 JSON 导入/导出迁移。

@@ -26,6 +26,7 @@ import {
   createBackup,
   parseAndMergeBackup,
   PERSONAL_STATE_KEY,
+  MAX_BACKUP_BYTES,
   readPersonalState,
   type PersonalState,
   type PersonalStateMap,
@@ -42,7 +43,6 @@ type SortMode =
 type ReadFilter = 'all' | 'unread' | 'read';
 type StorageState = 'loading' | 'saved' | 'saving' | 'error';
 
-const initialCollectionDate = '2026-09-09';
 const emptyPersonalState: PersonalState = {
   rating: 0,
   isRead: false,
@@ -99,7 +99,7 @@ export default function CombatAtlasClient() {
     });
 
     const handleStorage = (event: StorageEvent) => {
-      if (event.key !== PERSONAL_STATE_KEY) return;
+      if (event.key !== PERSONAL_STATE_KEY && event.key !== null) return;
       try {
         const stored = readPersonalState();
         personalRef.current = stored;
@@ -119,6 +119,7 @@ export default function CombatAtlasClient() {
     sourceId: string,
     patch: Partial<PersonalState>,
   ) => {
+    const hadPrevious = Object.hasOwn(personalRef.current, sourceId);
     const previous = personalRef.current[sourceId] ?? emptyPersonalState;
     const next = {
       ...previous,
@@ -134,7 +135,10 @@ export default function CombatAtlasClient() {
       writePersonalState(nextPersonal);
       setStorageState('saved');
     } catch {
-      personalRef.current = { ...personalRef.current, [sourceId]: previous };
+      const rolledBack = { ...personalRef.current };
+      if (hadPrevious) rolledBack[sourceId] = previous;
+      else delete rolledBack[sourceId];
+      personalRef.current = rolledBack;
       setPersonal(personalRef.current);
       setStorageState('error');
     }
@@ -157,12 +161,13 @@ export default function CombatAtlasClient() {
     link.href = href;
     link.download = `combat-atlas-backup-${hongKongDate()}.json`;
     link.click();
-    URL.revokeObjectURL(href);
+    window.setTimeout(() => URL.revokeObjectURL(href), 0);
     setBackupMessage('备份已导出');
   };
 
   const importBackup = async (file: File) => {
     try {
+      if (file.size > MAX_BACKUP_BYTES) throw new Error('backup too large');
       const merged = parseAndMergeBackup(await file.text(), personalRef.current);
       writePersonalState(merged);
       personalRef.current = merged;
@@ -185,6 +190,11 @@ export default function CombatAtlasClient() {
     (item) => item.addedAt === hongKongDate(),
   ).length;
   const readProgress = sources.length ? (readCount / sources.length) * 100 : 0;
+  const initialCollectionDate = useMemo(
+    () => sources.reduce((earliest, item) => item.addedAt < earliest ? item.addedAt : earliest, sources[0]?.addedAt ?? ''),
+    [],
+  );
+  const pressingCode = String(sources.length).padStart(3, '0');
 
   const filtered = useMemo(() => {
     const needle = query.trim().toLowerCase();
@@ -337,7 +347,6 @@ export default function CombatAtlasClient() {
     },
     { scope: shellRef },
   );
-
   useGSAP(
     () => {
       if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
@@ -448,7 +457,7 @@ export default function CombatAtlasClient() {
         <div className="home-grid">
           <div className="hero-pressing-marks" aria-hidden="true">
             <span className="pressing-side">SIDE A · 33⅓ RPM</span>
-            <span className="pressing-matrix">BDA–C2 / HK–033 / MASTER 01</span>
+            <span className="pressing-matrix">BDA–C2 / HK–{pressingCode} / MASTER 01</span>
             <span className="pressing-halftone" />
           </div>
           <div className="hero-copy" data-motion>
@@ -549,7 +558,7 @@ export default function CombatAtlasClient() {
         <aside className="archive-edge-rail" aria-hidden="true">
           <span>SIDE B</span>
           <i />
-          <b>PRESSING ARCHIVE · BDA–C2–033</b>
+          <b>PRESSING ARCHIVE · BDA–C2–{pressingCode}</b>
         </aside>
         <span
           className="archive-crop-mark archive-crop-mark-top"
@@ -650,7 +659,7 @@ export default function CombatAtlasClient() {
                   value={sortMode}
                   onValueChange={(value) => setSortMode(value as SortMode)}
                 >
-                  <SelectTrigger className="sort-trigger">
+                  <SelectTrigger className="sort-trigger" aria-label="排序方式">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent align="end" className="sort-menu">
@@ -719,7 +728,7 @@ export default function CombatAtlasClient() {
             </span>
             <time dateTime={hongKongDate()}>{hongKongDateLabel()} 更新</time>
             <span className="outro-matrix" aria-hidden="true">
-              BDA–C2–033 · MASTER 01
+              BDA–C2–{pressingCode} · MASTER 01
             </span>
             <a href="#top">
               回到唱片 <ArrowUpRight size={17} />
@@ -947,7 +956,7 @@ function SourceCard({
           className="source-link"
           href={source.url}
           target="_blank"
-          rel="noreferrer"
+          rel="noopener noreferrer"
         >
           <span>约 {source.readingTime} 分钟</span>
           查看原文 <ArrowUpRight size={16} />

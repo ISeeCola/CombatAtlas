@@ -1,12 +1,15 @@
 ﻿param(
-  [string]$ReviewPath = (Join-Path (Split-Path $PSScriptRoot -Parent) 'source\combat_atlas_review.xlsm'),
-  [string]$MainPath = (Join-Path (Split-Path $PSScriptRoot -Parent) 'source\combat_atlas_main.xlsm'),
+  [string]$ReviewPath = '',
+  [string]$MainPath = '',
   [string]$ResultPath = '',
   [string]$ReviewUpdatePath = '',
   [switch]$SyncDocsOnly
 )
 $ErrorActionPreference = 'Stop'
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+$root = Split-Path $PSScriptRoot -Parent
+if (-not $ReviewPath) { $ReviewPath = Join-Path $root 'source\combat_atlas_review.xlsm' }
+if (-not $MainPath) { $MainPath = Join-Path $root 'source\combat_atlas_main.xlsm' }
 
 function Write-Result([string]$Text) {
   if ($ResultPath) { [System.IO.File]::WriteAllText($ResultPath, $Text, [System.Text.Encoding]::Unicode) }
@@ -15,9 +18,18 @@ function Clean-Text($Value) { if ($null -eq $Value) { return '' }; return ([stri
 function Excel-Multiline-Text($Value) { return (Clean-Text $Value).Replace("`r`n", "`n").Replace("`r", "`n") }
 function Clean-Tsv($Value) { return (Clean-Text $Value).Replace("`t", ' ').Replace("`r", '').Replace("`n", '\n') }
 function Normalize-Url([string]$Value) {
-  $text = (Clean-Text $Value).TrimEnd('/')
+  $text = Clean-Text $Value
   if (-not $text) { return '' }
-  try { $uri = [Uri]$text; return (($uri.Scheme + '://' + $uri.Host + $uri.AbsolutePath.TrimEnd('/') + $uri.Query).ToLowerInvariant()) } catch { return $text.ToLowerInvariant() }
+  try {
+    $uri = [Uri]$text
+    if ($uri.Scheme -notin @('http','https')) { return '' }
+    $builder = [UriBuilder]::new($uri)
+    $builder.Scheme = $builder.Scheme.ToLowerInvariant(); $builder.Host = $builder.Host.ToLowerInvariant(); $builder.Fragment = ''
+    if (($builder.Scheme -eq 'https' -and $builder.Port -eq 443) -or ($builder.Scheme -eq 'http' -and $builder.Port -eq 80)) { $builder.Port = -1 }
+    $normalized = $builder.Uri.AbsoluteUri
+    if ($builder.Uri.AbsolutePath -ne '/') { $normalized = $normalized.TrimEnd('/') }
+    return $normalized
+  } catch { return '' }
 }
 function New-SourceId { return 'src-' + (Get-Date -Format 'yyyyMMddHHmmss') + '-' + ([Guid]::NewGuid().ToString('N').Substring(0,8)) }
 
@@ -34,7 +46,8 @@ if ($SyncDocsOnly) {
   }
 }
 
-$runtimeDir = [System.IO.Path]::GetTempPath()
+$runtimeDir = Join-Path (Split-Path $PSScriptRoot -Parent) '.runtime\promotion'
+New-Item -ItemType Directory -Force -Path $runtimeDir | Out-Null
 $acceptedPath = Join-Path $runtimeDir ("CombatAtlas-accepted-{0}.json" -f [Guid]::NewGuid().ToString('N'))
 $validationReportPath = Join-Path $runtimeDir ("CombatAtlas-validation-{0}.json" -f [Guid]::NewGuid().ToString('N'))
 $env:COMBAT_ATLAS_REVIEW = $ReviewPath
@@ -63,6 +76,7 @@ try {
   $excel = New-Object -ComObject Excel.Application
   $excel.Visible = $false; $excel.DisplayAlerts = $false
   $book = $excel.Workbooks.Open((Resolve-Path -LiteralPath $MainPath).Path)
+  if ($book.ReadOnly) { throw '主表以只读方式打开，可能正被其他 Excel 实例占用。请关闭主表后重试。' }
   $table = $book.Worksheets.Item('知识库文章').ListObjects.Item('CombatAtlasSources')
   $headers = @{}; for ($i = 1; $i -le $table.ListColumns.Count; $i++) { $headers[$table.ListColumns.Item($i).Name] = $i }
   $requiredHeaders = @('发布状态','中文标题','原标题','作者','来源','原文 URL','发布年份','语言','媒介','来源层级','主题','简介','核心结论','阅读时间（分钟）','策展价值（1-5）','精选状态','收录日期','sourceId')
