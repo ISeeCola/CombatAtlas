@@ -63,11 +63,11 @@
       "title": "新视角下的《战神》战斗进化",
       "originalTitle": "Evolving Combat in 'God of War' for a New Perspective",
       "author": "Mihir Sheth",
-      "publisher": "GDC Vault",
-      "url": "https://www.gdcvault.com/play/1026423/Evolving-Combat-in-God-of",
+      "publisher": "Game Developers Conference / YouTube",
+      "url": "https://www.youtube.com/watch?v=hE5tWF-Ou2k",
       "year": 2019,
       "language": "英文",
-      "medium": "演讲",
+      "medium": "视频",
       "tier": "一手",
       "topics": [
         "角色3C",
@@ -235,9 +235,9 @@
       "id": "cedec-position",
       "title": "角色 AI 的战术位置分析系统",
       "originalTitle": "キャラクターの人工知能のための戦術位置解析システム",
-      "author": "三宅阳一郎",
-      "publisher": "CEDEC 2016",
-      "url": "https://cedec.cesa.or.jp/2016/session/ENG/5264.html",
+      "author": "Eric Johnson / Youichiro Miyake（三宅阳一郎）",
+      "publisher": "CEDEC 2016 / CEDiL",
+      "url": "https://cedil.cesa.or.jp/cedil_sessions/view/1760",
       "year": 2016,
       "language": "日文",
       "medium": "演讲",
@@ -941,6 +941,93 @@
       "curatorScore": 4,
       "featured": false,
       "addedAt": "2026-09-09"
+    },
+    {
+      "publicationStatus": "published",
+      "id": "src-20260912162338-ea641217",
+      "title": "《最终幻想 VII 重制版/重生》创新战斗系统的设计挑战",
+      "originalTitle": "The Challenges in Developing an Innovative Battle System for 'Final Fantasy VII Remake and Rebirth'",
+      "author": "Teruki Endo",
+      "publisher": "GDC Vault / GDC 2025",
+      "url": "https://gdcvault.com/play/1035152/The-Challenges-in-Developing-an",
+      "year": 2025,
+      "language": "英文",
+      "medium": "演讲",
+      "tier": "一手",
+      "topics": [
+        "技能",
+        "资源循环",
+        "玩法规则",
+        "战斗平衡"
+      ],
+      "summary": "复盘《最终幻想 VII》重制项目如何把原作回合制战斗重构为动作操作与策略决策并存的系统，聚焦这一转型的设计思路、开发过程与结果。",
+      "takeaways": [
+        "保留原作的策略身份",
+        "让动作执行服务于策略选择",
+        "以新旧玩家均可理解的规则重新组织战斗"
+      ],
+      "readingTime": 60,
+      "curatorScore": 4,
+      "featured": false,
+      "addedAt": "2026-09-12"
+    },
+    {
+      "publicationStatus": "published",
+      "id": "src-20260912162338-5bbd41f0",
+      "title": "《暗喻幻想》：指令制 RPG 战斗系统的现代化潜力",
+      "originalTitle": "Developing 'Metaphor: ReFantazio' and the Potential of RPG Command Battle Systems",
+      "author": "Kenichi Goto",
+      "publisher": "GDC Vault / GDC 2025",
+      "url": "https://www.gdcvault.com/play/1035147",
+      "year": 2025,
+      "language": "英文",
+      "medium": "演讲",
+      "tier": "一手",
+      "topics": [
+        "资源循环",
+        "玩法规则",
+        "战斗平衡",
+        "制作流程"
+      ],
+      "summary": "以《暗喻幻想：ReFantazio》为例，讨论指令制 RPG 战斗的现代化、导演愿景向系统规则的转译，以及通过试玩数据提高平衡调整的可靠性和成本效率。",
+      "takeaways": [
+        "从体验目标反推系统规则",
+        "保留指令战斗的决策价值",
+        "以结构化试玩数据降低平衡迭代成本"
+      ],
+      "readingTime": 60,
+      "curatorScore": 4,
+      "featured": false,
+      "addedAt": "2026-09-12"
+    },
+    {
+      "publicationStatus": "published",
+      "id": "src-20260912162338-c2410ec3",
+      "title": "Mission Kontrol：《真人快打 1》的战斗测试工具链",
+      "originalTitle": "Tools Summit: Mission Kontrol: Revolutionizing Combat Testing for 'Mortal Kombat 1'",
+      "author": "Etienne Palmer-Campbell",
+      "publisher": "GDC Vault / GDC 2025",
+      "url": "https://gdcvault.com/play/1035569/Tools-Summit-Mission-Kontrol-Revolutionizing",
+      "year": 2025,
+      "language": "英文",
+      "medium": "演讲",
+      "tier": "一手",
+      "topics": [
+        "技能",
+        "打击感",
+        "制作流程",
+        "调试"
+      ],
+      "summary": "介绍 NetherRealm 在 Unreal Engine 中开发 Mission Kontrol 的过程：把复杂格斗输入与战斗状态封装为可重复测试场景，让不同职能人员能够独立复现问题并缩短迭代时间。",
+      "takeaways": [
+        "把输入与场景状态封装为可重复测试",
+        "让不同职能独立复现缺陷",
+        "根据团队反馈持续迭代工具"
+      ],
+      "readingTime": 60,
+      "curatorScore": 4,
+      "featured": false,
+      "addedAt": "2026-09-12"
     }
   ]
 }

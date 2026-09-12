@@ -95,10 +95,19 @@ $message = "Update CombatAtlas sources $(Get-Date -Format 'yyyy-MM-dd HH:mm')"
 Invoke-Git @('commit', '-m', $message) | Out-Null
 $publishedSha = Invoke-Git @('rev-parse', 'HEAD')
 
-$pushOutput = & git push origin main 2>&1
-if ($LASTEXITCODE -ne 0) {
-  $fallback = & powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/publish-via-github-api.ps1 -RemoteSha $remote.sha -Message $message 2>&1
-  if ($LASTEXITCODE -ne 0) { throw "Git 推送和 API 备用通道均失败：$($pushOutput -join ' ')；$($fallback -join ' ')" }
+$previousErrorActionPreference = $ErrorActionPreference
+try {
+  $ErrorActionPreference = 'Continue'
+  $pushOutput = & git push origin main 2>&1
+  $pushExitCode = $LASTEXITCODE
+  if ($pushExitCode -ne 0) {
+    $fallback = & powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/publish-via-github-api.ps1 -RemoteSha $remote.sha -Message $message 2>&1
+    $fallbackExitCode = $LASTEXITCODE
+  }
+}
+finally { $ErrorActionPreference = $previousErrorActionPreference }
+if ($pushExitCode -ne 0) {
+  if ($fallbackExitCode -ne 0) { throw "Git 推送和 API 备用通道均失败：$($pushOutput -join ' ')；$($fallback -join ' ')" }
   $publishedSha = ($fallback | Select-Object -Last 1).Trim()
 }
 
