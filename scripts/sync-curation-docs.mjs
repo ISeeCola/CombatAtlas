@@ -55,7 +55,7 @@ put(historyPath, historyBase.includes(digest) ? historyBase : `${historyBase.tri
 
 const mismatches = [];
 for (const [file, content] of outputs) if (await readOptional(file) !== content) mismatches.push(path.relative(root, file));
-let stale = [];
+const stale = [];
 try {
   const expected = new Set([...outputs.keys()].filter((file) => path.dirname(file) === itemsRoot).map((file) => path.basename(file)));
   for (const name of await fs.readdir(itemsRoot)) {

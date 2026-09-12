@@ -187,8 +187,12 @@ try {
   $pushOutput = & git push origin main 2>&1
   $pushExitCode = $LASTEXITCODE
   if ($pushExitCode -ne 0) {
-    $fallback = & powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/publish-via-github-api.ps1 -RemoteSha $remote.sha -Message $message 2>&1
-    $fallbackExitCode = $LASTEXITCODE
+    $fallbackOut = Join-Path $tempRoot ("github-api-{0}.out" -f [Guid]::NewGuid().ToString('N'))
+    $fallbackErr = Join-Path $tempRoot ("github-api-{0}.err" -f [Guid]::NewGuid().ToString('N'))
+    $messageArgument = '"' + $message.Replace('"', '\"') + '"'
+    $fallbackProcess = Start-Process -FilePath 'powershell.exe' -ArgumentList @('-NoProfile','-ExecutionPolicy','Bypass','-File',(Join-Path $root 'scripts\publish-via-github-api.ps1'),'-RemoteSha',$remote.sha,'-Message',$messageArgument) -RedirectStandardOutput $fallbackOut -RedirectStandardError $fallbackErr -Wait -PassThru -WindowStyle Hidden
+    $fallbackExitCode = $fallbackProcess.ExitCode
+    $fallback = @([System.IO.File]::ReadAllText($fallbackOut), [System.IO.File]::ReadAllText($fallbackErr)) | Where-Object { $_ }
   }
 }
 finally { $ErrorActionPreference = $previousErrorActionPreference }

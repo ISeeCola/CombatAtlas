@@ -110,6 +110,7 @@ function Write-GitHubCommitObject($Commit) {
 
 $remoteCommit = Invoke-GitHubApi 'GET' "/git/commits/$RemoteSha"
 $localHead = Invoke-GitChecked @('rev-parse', 'HEAD')
+if ($localHead -eq $RemoteSha) { Write-Output $RemoteSha; exit 0 }
 $treeEntries = @()
 $changes = if ($PurgedRoot) { @(& git ls-files | ForEach-Object { "A`t$_" }) } else { @(& git diff --name-status "$RemoteSha..HEAD") }
 foreach ($change in $changes) {
