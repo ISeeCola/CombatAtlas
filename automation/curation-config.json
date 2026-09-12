@@ -1,5 +1,5 @@
 {
-  "version": 3,
+  "version": 5,
   "timezone": "Asia/Hong_Kong",
   "defaultSchedule": "daily-09:00",
   "queries": [
@@ -31,6 +31,43 @@
     "reject": ["无作者聚合页", "洗稿", "只有观点没有案例", "无法找到原始出处"],
     "dedupeKeys": ["canonicalUrl", "normalizedTitle", "speakerAndEvent"],
     "gdcVideoPreference": "遇到 GDC Vault 条目时，先检索 GDC 官方 YouTube 或其他官方公开录像；能取得视频时优先以公开视频链接作为收录入口，Vault 保留为会议信息、幻灯片或关联证据。",
+    "sourceQuality": {
+      "high": {
+        "label": "高质量",
+        "usage": "优先查询并优先作为 canonical",
+        "examples": ["GDC 官方 YouTube", "讲者或开发商官方完整录像", "作者原文", "官方技术博客", "论文原文", "出版社可读章节"]
+      },
+      "secondary": {
+        "label": "次级质量",
+        "usage": "仅在高质量入口不存在或不可用时替代；发现高质量原件后降为关联证据",
+        "examples": ["GDC Vault", "CEDEC/CEDiL 会务页", "署名清晰的专业二手分析", "官方书目或摘要页"]
+      },
+      "low": {
+        "label": "低质量",
+        "usage": "仅提取检索线索；不得自动写入原文 URL、规范 URL 或 canonical；无替代入口时跳过且不占每日额度",
+        "examples": ["脉脉", "无作者聚合页", "洗稿站", "纯营销或导流页面"]
+      }
+    },
+    "blockedSources": [
+      {
+        "name": "脉脉",
+        "domains": ["maimai.cn"],
+        "quality": "low",
+        "mode": "clue-only",
+        "reason": "作者归属、原始出处和转载链不稳定，访问可复查性差"
+      }
+    ],
+    "sourceSelectionOrder": ["high", "secondary", "low"],
+    "candidateContract": {
+      "required": ["summary", "keyTakeaways", "readingMinutes", "displayValue", "featured", "addedAt"],
+      "keyTakeawaysCount": { "min": 2, "max": 4 },
+      "readingMinutes": "positive-integer",
+      "displayValue": { "min": 1, "max": 5 },
+      "featuredDefault": false,
+      "addedAt": "Asia/Hong_Kong YYYY-MM-DD",
+      "failureMode": "reject-entire-batch-and-keep-pending"
+    },
+    "humanAcceptanceOverride": "低质量来源限制自动化收录；维护者明确标记已接受时仍可入库，但审核备注必须保留来源风险。",
     "reviewStatuses": ["待复核", "待修改", "已接受", "已入库", "已拒绝", "重复"],
     "reworkPolicy": "每轮优先处理最多3条尚未处理当前评论SHA-256的待修改记录；成功转待复核，失败保持待修改；不占每日3条新增额度。",
     "terminalDedupe": ["已拒绝", "重复"],

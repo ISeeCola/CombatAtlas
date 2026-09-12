@@ -12,6 +12,7 @@ function Write-Result([string]$Text) {
   if ($ResultPath) { [System.IO.File]::WriteAllText($ResultPath, $Text, [System.Text.Encoding]::Unicode) }
 }
 function Clean-Text($Value) { if ($null -eq $Value) { return '' }; return ([string]$Value).Trim() }
+function Excel-Multiline-Text($Value) { return (Clean-Text $Value).Replace("`r`n", "`n").Replace("`r", "`n") }
 function Clean-Tsv($Value) { return (Clean-Text $Value).Replace("`t", ' ').Replace("`r", '').Replace("`n", '\n') }
 function Normalize-Url([string]$Value) {
   $text = (Clean-Text $Value).TrimEnd('/')
@@ -86,25 +87,32 @@ try {
     $canonical = Normalize-Url (Clean-Text $row.'规范 URL')
     if (-not $sourceId -and $canonical -and $existingByUrl.ContainsKey($canonical)) { $sourceId = [string]$existingByUrl[$canonical] }
     if (-not $sourceId) { $sourceId = New-SourceId }
-    if ($existingById.ContainsKey($sourceId)) {
-      $prepared += [pscustomobject]@{ CandidateId=$candidateId; SourceId=$sourceId; Existing=$true; Item=$item; Values=$null }
-      continue
-    }
-    if ($canonical -and $existingByUrl.ContainsKey($canonical)) {
+    $existingRow = if ($existingById.ContainsKey($sourceId)) { [int]$existingById[$sourceId] } else { 0 }
+    if ($canonical -and $existingByUrl.ContainsKey($canonical) -and [string]$existingByUrl[$canonical] -ne $sourceId) {
       $technicalErrors += "「$($row.'中文标题')」的规范 URL 已属于 sourceId $($existingByUrl[$canonical])，但 review 指定为 $sourceId。"
       continue
     }
     $values = @{
       '发布状态'='发布'; '中文标题'=Clean-Text $row.'中文标题'; '原标题'=Clean-Text $row.'原标题'; '作者'=Clean-Text $row.'作者'; '来源'=Clean-Text $row.'来源'; '原文 URL'=Clean-Text $row.'规范 URL';
       '发布年份'=Clean-Text $row.'发布年份'; '语言'=Clean-Text $row.'语言'; '媒介'=Clean-Text $row.'媒介'; '来源层级'=Clean-Text $row.'建议来源层级'; '主题'=Clean-Text $row.'建议主题'; '简介'=Clean-Text $row.'摘要';
-      '核心结论'=Clean-Text $row.'核心方法'; '阅读时间（分钟）'=Clean-Text $row.'阅读时间（分钟）'; '精选状态'=Clean-Text $row.'精选状态'; '收录日期'=Clean-Text $row.'入库日期'; 'sourceId'=$sourceId
+      '核心结论'=Excel-Multiline-Text $row.'核心方法'; '阅读时间（分钟）'=Clean-Text $row.'阅读时间（分钟）'; '精选状态'=Clean-Text $row.'精选状态'; '收录日期'=Clean-Text $row.'入库日期'; 'sourceId'=$sourceId
     }
     $values['策展价值（1-5）'] = Clean-Text $row.'展示价值（1-5）'
+    if ($existingRow -gt 0) {
+      $reviewValues = @{}
+      foreach ($key in $values.Keys) {
+        if ($key -in @('发布状态','sourceId')) { continue }
+        if (Clean-Text $values[$key]) { $reviewValues[$key] = $values[$key] }
+      }
+      $prepared += [pscustomobject]@{ CandidateId=$candidateId; SourceId=$sourceId; Existing=$true; ExistingRow=$existingRow; Item=$item; Values=$reviewValues }
+      if ($canonical) { $existingByUrl[$canonical] = $sourceId }
+      continue
+    }
     $mandatory = @('中文标题','作者','来源','原文 URL','发布年份','语言','媒介','来源层级','主题','简介','核心结论','阅读时间（分钟）','策展价值（1-5）','精选状态','收录日期','sourceId')
     $missing = @($mandatory | Where-Object { -not (Clean-Text $values[$_]) })
     if ($missing.Count) { $technicalErrors += "「$($row.'中文标题')」新增主表行缺少网页必需字段：$($missing -join '、')"; continue }
     try { $uri = [Uri]$values['原文 URL']; if ($uri.Scheme -notin @('http','https')) { throw 'bad' } } catch { $technicalErrors += "「$($row.'中文标题')」的原文 URL 非法：$($values['原文 URL'])"; continue }
-    $prepared += [pscustomobject]@{ CandidateId=$candidateId; SourceId=$sourceId; Existing=$false; Item=$item; Values=$values }
+    $prepared += [pscustomobject]@{ CandidateId=$candidateId; SourceId=$sourceId; Existing=$false; ExistingRow=0; Item=$item; Values=$values }
     $existingById[$sourceId] = -1; if ($canonical) { $existingByUrl[$canonical] = $sourceId }
   }
   if ($technicalErrors.Count) {
@@ -112,10 +120,21 @@ try {
     Write-Result $message; [Console]::Error.WriteLine($message); exit 1
   }
 
-  $added = 0; $existingCount = 0; $updates = New-Object System.Collections.Generic.List[string]
+  $added = 0; $existingCount = 0; $updatedFields = 0; $updates = New-Object System.Collections.Generic.List[string]
   $updates.Add("#columns`t$($payload.columns.'候选 ID')`t$($payload.columns.sourceId)`t$($payload.columns.'审核状态')`t$($payload.columns.'审核备注')")
   foreach ($entry in $prepared) {
-    if ($entry.Existing) { $existingCount++ }
+    if ($entry.Existing) {
+      $existingCount++
+      $targetRow = $table.DataBodyRange.Rows.Item($entry.ExistingRow)
+      foreach ($key in $entry.Values.Keys) {
+        $oldValue = Clean-Text $targetRow.Cells(1,$headers[$key]).Value2
+        $newValue = Clean-Text $entry.Values[$key]
+        if ($newValue -and $oldValue -ne $newValue) {
+          $targetRow.Cells(1,$headers[$key]).Value2 = $entry.Values[$key]
+          $updatedFields++
+        }
+      }
+    }
     else {
       $newRow = $table.ListRows.Add().Range
       foreach ($key in $entry.Values.Keys) { $newRow.Cells(1,$headers[$key]).Value2 = $entry.Values[$key] }
@@ -123,10 +142,10 @@ try {
     }
     $updates.Add((Clean-Tsv $entry.CandidateId) + "`t" + (Clean-Tsv $entry.SourceId) + "`t已入库`t" + (Clean-Tsv $entry.Item.finalReviewNote))
   }
-  if ($added -gt 0) { $book.Save() }
+  if ($added -gt 0 -or $updatedFields -gt 0) { $book.Save() }
   $book.Close($false); $book = $null; $excel.Quit(); $excel = $null
   if ($ReviewUpdatePath) { [System.IO.File]::WriteAllLines($ReviewUpdatePath, $updates, [System.Text.Encoding]::Unicode) }
-  $message = "主表新增 $added 条，已存在 $existingCount 条；请由 Excel 完成 review 状态写回。尚未发布网页。"
+  $message = "主表新增 $added 条，匹配已有 $existingCount 条并采用 Review 非空内容更新 $updatedFields 个字段；请由 Excel 完成 review 状态写回。尚未发布网页。"
   Write-Result $message; Write-Output $message
 } catch {
   $message = $_.Exception.Message

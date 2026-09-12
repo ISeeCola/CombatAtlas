@@ -5,11 +5,29 @@
 $ErrorActionPreference = 'Stop'
 $root = Split-Path $PSScriptRoot -Parent
 $pendingDir = Join-Path $root 'automation\pending'
+$configPath = Join-Path $root 'automation\curation-config.json'
 New-Item -ItemType Directory -Force -Path $pendingDir | Out-Null
 $lockPath = "$ReviewPath.lock"
 $lock = $null; $excel = $null; $book = $null
 
 function Clean($Value) { if ($null -eq $Value) { return '' }; return ([string]$Value).Trim() }
+function Get-UrlHost([string]$Value) {
+  $text = Clean $Value
+  if (-not $text) { return '' }
+  try { return ([Uri]$text).Host.ToLowerInvariant().TrimEnd('.') } catch { return '' }
+}
+function Test-BlockedSource([string]$Value, $BlockedSources) {
+  $hostName = Get-UrlHost $Value
+  if (-not $hostName) { return $false }
+  foreach ($source in @($BlockedSources)) {
+    if ((Clean $source.mode).ToLowerInvariant() -ne 'clue-only') { continue }
+    foreach ($domainValue in @($source.domains)) {
+      $domain = (Clean $domainValue).ToLowerInvariant().TrimStart('.').TrimEnd('.')
+      if ($domain -and ($hostName -eq $domain -or $hostName.EndsWith(".$domain"))) { return $true }
+    }
+  }
+  return $false
+}
 function Comment-Hash([string]$Value) {
   $bytes = [System.Text.Encoding]::UTF8.GetBytes($Value)
   $sha = [System.Security.Cryptography.SHA256]::Create()
@@ -20,20 +38,65 @@ function Set-Cell($range, $headers, [string]$name, $value) {
   if ($value -is [datetime]) { $value = $value.ToString('yyyy-MM-dd') }
   $range.Cells(1,$headers[$name]).Value2 = [string]$value
 }
+function Save-Pending([string]$Reason) {
+  $candidateFullPath = [System.IO.Path]::GetFullPath($CandidateJson)
+  $pendingFullPath = [System.IO.Path]::GetFullPath($pendingDir)
+  if (-not $candidateFullPath.StartsWith($pendingFullPath, [System.StringComparison]::OrdinalIgnoreCase)) {
+    $pending = Join-Path $pendingDir ("daily-{0}.json" -f (Get-Date -Format 'yyyyMMdd-HHmmss-fff'))
+    Copy-Item -LiteralPath $CandidateJson -Destination $pending
+    return "$Reason 输入已保存到 $pending。"
+  }
+  return "$Reason 当前输入已位于 pending，文件保持不变。"
+}
+function Convert-Featured($Value, [string]$Label) {
+  if ($Value -is [bool]) { return $(if ($Value) { '是' } else { '否' }) }
+  $text = (Clean $Value).ToLowerInvariant()
+  if ($text -in @('true','是')) { return '是' }
+  if ($text -in @('false','否')) { return '否' }
+  throw "$Label 的 featured 必须为布尔值 true/false"
+}
+function Test-IsoDate([string]$Value) {
+  $parsed = [datetime]::MinValue
+  return [datetime]::TryParseExact($Value, 'yyyy-MM-dd', [System.Globalization.CultureInfo]::InvariantCulture, [System.Globalization.DateTimeStyles]::None, [ref]$parsed)
+}
 
 try {
   try { $lock = [System.IO.File]::Open($lockPath, 'CreateNew', 'Write', 'None') }
   catch {
-    $pending = Join-Path $pendingDir ("daily-{0}.json" -f (Get-Date -Format 'yyyyMMdd-HHmmss'))
-    Copy-Item -LiteralPath $CandidateJson -Destination $pending
-    throw "审核工作簿正被占用；输入已保存到 $pending。"
+    throw (Save-Pending '审核工作簿正被占用；')
   }
   $raw = Get-Content -Raw -Encoding UTF8 -LiteralPath $CandidateJson | ConvertFrom-Json
+  $config = Get-Content -Raw -Encoding UTF8 -LiteralPath $configPath | ConvertFrom-Json
+  $blockedSources = @($config.policy.blockedSources)
   if ($raw -is [System.Array]) { $reworkResults = @(); $newCandidates = @($raw) }
   elseif ($null -ne $raw.newCandidates -or $null -ne $raw.reworkResults) { $reworkResults = @($raw.reworkResults); $newCandidates = @($raw.newCandidates) }
   else { $reworkResults = @(); $newCandidates = @($raw) }
   if ($reworkResults.Count -gt 3) { throw '单次待修改重做不得超过 3 条' }
   if ($newCandidates.Count -gt 3) { throw '单次新增候选不得超过 3 条' }
+
+  $candidateValidationErrors = New-Object System.Collections.Generic.List[string]
+  foreach ($candidate in $newCandidates) {
+    $label = Clean $candidate.title
+    if (-not $label) { $label = Clean $candidate.candidateId }
+    if (-not $label) { $label = '未命名候选' }
+    if (-not (Clean $candidate.summary)) { $candidateValidationErrors.Add("$label：缺少 summary") }
+    $takeaways = @()
+    foreach ($takeaway in @($candidate.keyTakeaways)) {
+      $cleanTakeaway = Clean $takeaway
+      if ($cleanTakeaway -and $takeaways -notcontains $cleanTakeaway) { $takeaways += $cleanTakeaway }
+    }
+    if ($takeaways.Count -lt 2 -or $takeaways.Count -gt 4) { $candidateValidationErrors.Add("$label：keyTakeaways 必须包含 2-4 条非空内容") }
+    $readingMinutes = 0
+    if (-not [int]::TryParse((Clean $candidate.readingMinutes), [ref]$readingMinutes) -or $readingMinutes -le 0) { $candidateValidationErrors.Add("$label：readingMinutes 必须为正整数") }
+    $displayValue = 0
+    if (-not [int]::TryParse((Clean $candidate.displayValue), [ref]$displayValue) -or $displayValue -lt 1 -or $displayValue -gt 5) { $candidateValidationErrors.Add("$label：displayValue 必须为 1-5 的整数") }
+    try { [void](Convert-Featured $candidate.featured $label) } catch { $candidateValidationErrors.Add($_.Exception.Message) }
+    $addedAt = Clean $candidate.addedAt
+    if (-not (Test-IsoDate $addedAt)) { $candidateValidationErrors.Add("$label：addedAt 必须为有效的 YYYY-MM-DD 日期") }
+  }
+  if ($candidateValidationErrors.Count) {
+    throw (Save-Pending ("每日候选完整字段校验失败：`r`n" + ($candidateValidationErrors -join "`r`n")))
+  }
 
   $excel = New-Object -ComObject Excel.Application; $excel.Visible = $false; $excel.DisplayAlerts = $false
   $book = $excel.Workbooks.Open((Resolve-Path -LiteralPath $ReviewPath).Path)
@@ -68,6 +131,14 @@ try {
     if ($note -match [regex]::Escape("commentSha256=$actualHash")) { $skippedRework++; continue }
     $outcome = (Clean $result.outcome).ToLowerInvariant()
     if ($outcome -notin @('resolved','unresolved')) { throw "$candidateId 的 outcome 必须为 resolved 或 unresolved" }
+    if ($outcome -eq 'resolved' -and $result.updates) {
+      foreach ($urlField in @('原文 URL','规范 URL')) {
+        $urlProperty = $result.updates.PSObject.Properties[$urlField]
+        if ($urlProperty -and (Test-BlockedSource (Clean $urlProperty.Value) $blockedSources)) {
+          throw "$candidateId 不能以低质量线索来源作为已解决的$urlField：$($urlProperty.Value)"
+        }
+      }
+    }
     if ($result.updates) {
       foreach ($property in $result.updates.PSObject.Properties) {
         if ($property.Name -notin $allowedUpdateFields) { throw "$candidateId 试图修改不允许的字段：$($property.Name)" }
@@ -83,20 +154,29 @@ try {
     $reworked++
   }
 
-  $added = 0
+  $added = 0; $skippedLowQuality = 0
   foreach ($candidate in $newCandidates) {
     $canonical = Clean $candidate.canonicalUrl; if (-not $canonical) { $canonical = Clean $candidate.url }
+    if ((Test-BlockedSource $canonical $blockedSources) -or (Test-BlockedSource (Clean $candidate.url) $blockedSources)) {
+      $skippedLowQuality++
+      continue
+    }
     $platform = Clean $candidate.platformId
     if (($canonical -and $seen.ContainsKey($canonical.ToLowerInvariant())) -or ($platform -and $seen.ContainsKey($platform.ToLowerInvariant()))) { continue }
     $candidateId = if ($candidate.candidateId) { Clean $candidate.candidateId } else { 'cand-' + (Get-Date -Format 'yyyyMMdd') + '-' + ([Guid]::NewGuid().ToString('N').Substring(0,8)) }
     if ($seen.ContainsKey($candidateId.ToLowerInvariant())) { continue }
     $row = $table.ListRows.Add().Range
-    $values = @{ '候选 ID'=$candidateId; '审核状态'='待复核'; '发现日期'=(Get-Date); '中文标题'=$candidate.title; '原标题'=$candidate.originalTitle; '作者'=$candidate.author; '来源'=$candidate.source; '原文 URL'=$candidate.url; '规范 URL'=$canonical; '平台 ID'=$platform; '发布年份'=$candidate.year; '语言'=$candidate.language; '媒介'=$candidate.medium; '建议来源层级'=$candidate.tier; '建议主题'=(@($candidate.topics) -join '；'); '证据状态'=$candidate.evidenceStatus; '短读证据'=$candidate.shortEvidence; '去重结果'='已与主表、review、catalog 和终态记录去重'; '审核备注'=$candidate.reason; '评论'=$candidate.comment }
+    $takeaways = @()
+    foreach ($takeaway in @($candidate.keyTakeaways)) {
+      $cleanTakeaway = Clean $takeaway
+      if ($cleanTakeaway -and $takeaways -notcontains $cleanTakeaway) { $takeaways += $cleanTakeaway }
+    }
+    $values = @{ '候选 ID'=$candidateId; '审核状态'='待复核'; '发现日期'=(Get-Date); '中文标题'=$candidate.title; '原标题'=$candidate.originalTitle; '作者'=$candidate.author; '来源'=$candidate.source; '原文 URL'=$candidate.url; '规范 URL'=$canonical; '平台 ID'=$platform; '发布年份'=$candidate.year; '语言'=$candidate.language; '媒介'=$candidate.medium; '建议来源层级'=$candidate.tier; '建议主题'=(@($candidate.topics) -join '；'); '证据状态'=$candidate.evidenceStatus; '短读证据'=$candidate.shortEvidence; '去重结果'='已与主表、review、catalog 和终态记录去重'; '摘要'=$candidate.summary; '核心方法'=($takeaways -join [char]10); '阅读时间（分钟）'=[int]$candidate.readingMinutes; '展示价值（1-5）'=[int]$candidate.displayValue; '精选状态'=(Convert-Featured $candidate.featured $candidate.title); '入库日期'=$candidate.addedAt; '审核备注'=$candidate.reason; '评论'=$candidate.comment }
     foreach ($key in $values.Keys) { Set-Cell $row $headers $key $values[$key] }
     $seen[$candidateId.ToLowerInvariant()]=$true; if($canonical){$seen[$canonical.ToLowerInvariant()]=$true}; if($platform){$seen[$platform.ToLowerInvariant()]=$true}; $added++
   }
   $book.Save()
-  Write-Output "已处理待修改 $reworked 条（跳过已处理评论 $skippedRework 条），新增待复核 $added 条；未修改主表或发布网页。"
+  Write-Output "已处理待修改 $reworked 条（跳过已处理评论 $skippedRework 条），新增待复核 $added 条，跳过低质量线索 $skippedLowQuality 条；未修改主表或发布网页。"
 } finally {
   if ($book) { try { $book.Close($true) } catch {} }; if ($excel) { try { $excel.Quit() } catch {} }
   if ($lock) { $lock.Dispose(); Remove-Item -LiteralPath $lockPath -ErrorAction SilentlyContinue }
