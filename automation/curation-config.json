@@ -72,6 +72,12 @@
     "reworkPolicy": "每轮优先处理最多3条尚未处理当前评论SHA-256的待修改记录；成功转待复核，失败保持待修改；不占每日3条新增额度。",
     "terminalDedupe": ["已拒绝", "重复"],
     "automationCeiling": "自动化只能写入待复核或在待修改/待复核间推进；不得设置已接受、已入库或已拒绝。",
+    "executionBoundary": {
+      "trackedFiles": "read-only",
+      "allowedWrites": ["reviewWorkbook", "automation/pending", ".runtime", "generated-local-docs"],
+      "forbiddenWrites": ["mainWorkbook", "app/generated-sources.json", "app/source-manifest.json", "scripts", "tests", "git", "website"],
+      "toolFailure": "keep-idempotent-pending-write-runtime-diagnostic-and-notify; never-hotfix-during-heartbeat"
+    },
     "copyright": "仅保存元数据、自写摘要与短评，不镜像全文、图片或付费内容"
   }
 }

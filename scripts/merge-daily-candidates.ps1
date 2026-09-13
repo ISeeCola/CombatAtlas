@@ -58,7 +58,7 @@ function Set-Cell($range, $headers, [string]$name, $value) {
 }
 function Save-Pending([string]$Reason) {
   $candidateFullPath = [System.IO.Path]::GetFullPath($CandidateJson)
-  $pendingFullPath = [System.IO.Path]::GetFullPath($pendingDir)
+  $pendingFullPath = [System.IO.Path]::GetFullPath($pendingDir).TrimEnd([System.IO.Path]::DirectorySeparatorChar) + [System.IO.Path]::DirectorySeparatorChar
   if (-not $candidateFullPath.StartsWith($pendingFullPath, [System.StringComparison]::OrdinalIgnoreCase)) {
     $pending = Join-Path $pendingDir ("daily-{0}.json" -f (Get-Date -Format 'yyyyMMdd-HHmmss-fff'))
     Copy-Item -LiteralPath $CandidateJson -Destination $pending
@@ -162,7 +162,7 @@ try {
     $rowIndex = $rowsByCandidate[$candidateId]
     $range = $table.DataBodyRange.Rows.Item($rowIndex)
     $status = Clean $range.Cells(1,$headers['审核状态']).Value2
-    if ($status -ne '待修改') { throw "$candidateId 当前不是待修改状态，而是：$status" }
+    if ($status -ne '待修改') { $skippedRework++; continue }
     $comment = Clean $range.Cells(1,$headers['评论']).Value2
     if (-not $comment) { throw "$candidateId 缺少人工评论，无法执行重做" }
     $actualHash = Comment-Hash $comment
@@ -230,6 +230,11 @@ try {
     $seen[$candidateId.ToLowerInvariant()]=$candidateId; if($canonical){$seen[$canonical]=$candidateId}; if($platform){$seen[$platform.ToLowerInvariant()]=$candidateId}; $added++
   }
   $book.Save()
+  $candidateFullPath = [System.IO.Path]::GetFullPath($CandidateJson)
+  $pendingFullPath = [System.IO.Path]::GetFullPath($pendingDir).TrimEnd([System.IO.Path]::DirectorySeparatorChar) + [System.IO.Path]::DirectorySeparatorChar
+  if ($candidateFullPath.StartsWith($pendingFullPath, [System.StringComparison]::OrdinalIgnoreCase) -and (Test-Path -LiteralPath $candidateFullPath)) {
+    Remove-Item -LiteralPath $candidateFullPath
+  }
   Write-Output "已处理待修改 $reworked 条（跳过已处理评论 $skippedRework 条），新增待复核 $added 条，跳过低质量线索 $skippedLowQuality 条；未修改主表或发布网页。"
 } catch {
   $reason = $_.Exception.Message
