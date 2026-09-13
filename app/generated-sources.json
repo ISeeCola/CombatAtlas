@@ -1028,6 +1028,63 @@
       "curatorScore": 4,
       "featured": false,
       "addedAt": "2026-09-12"
+    },
+    {
+      "publicationStatus": "published",
+      "id": "src-20260913105836-61f29d55",
+      "title": "《街头霸王6》V-Rival：用拟人对战 AI 构建成长循环",
+      "originalTitle": "『ストリートファイター6』プレイヤーを模したAIとの対戦から、楽しみながら成長できる体験のしくみ",
+      "author": "安原直宏 / Capcom",
+      "publisher": "CEDEC 2025",
+      "url": "https://cedec.cesa.or.jp/2025/timetable/detail/s67a0541ebb2d1",
+      "year": 2025,
+      "language": "日文",
+      "medium": "演讲",
+      "tier": "一手",
+      "topics": [
+        "怪物AI",
+        "玩法规则",
+        "基础理论"
+      ],
+      "summary": "CEDEC 2025 官方场次介绍了《街头霸王6》V-Rival：把玩家对战拆解并重构为拟人 AI，再用对局建议降低真人对战门槛并形成持续成长循环。当前结论仅依据官方摘要，完整材料仍待复核。",
+      "takeaways": [
+        "从真实玩家对战中拆解并重构可供练习的拟人 AI。",
+        "把赛后建议接入下一局目标，使训练反馈形成循环。",
+        "为长期运营设计按赛季更新和分发 AI 数据的规则。"
+      ],
+      "readingTime": 60,
+      "curatorScore": 5,
+      "featured": false,
+      "addedAt": "2026-09-13"
+    },
+    {
+      "publicationStatus": "published",
+      "id": "src-20260913105836-a4659887",
+      "title": "《漫威争锋》大规模怪潮：在 PvP 框架上扩展 PvE 战斗",
+      "originalTitle": "Expanding to Diverse Battlefields: Marvel Rivals’ Architecture Built to Support Mass Monster Assault",
+      "author": "Marvel Rivals 开发团队",
+      "publisher": "CEDEC 2026",
+      "url": "https://cedec.cesa.or.jp/2026/timetable/detail/s6a1a6ecee7f4a",
+      "year": 2026,
+      "language": "英文",
+      "medium": "演讲",
+      "tier": "一手",
+      "topics": [
+        "遭遇战",
+        "怪物AI",
+        "玩法规则",
+        "技能"
+      ],
+      "summary": "CEDEC 2026 官方场次聚焦《漫威争锋》如何在面向少量高复杂英雄的 PvP 架构上扩展大规模 PvE 怪潮。摘要覆盖技能兼容、敌人和遭遇系统、关卡机制及性能约束，具体实现仍待完整材料复核。",
+      "takeaways": [
+        "通过透明替换和可热插拔设计，让 PvE 扩展不改变英雄在 PvP 中的原有行为。",
+        "把敌人系统、遭遇逻辑和关卡机制作为成套扩展，而非只增加 AI 单位数量。",
+        "让战斗机制方案与服务器、运行时性能预算共同迭代。"
+      ],
+      "readingTime": 60,
+      "curatorScore": 5,
+      "featured": false,
+      "addedAt": "2026-09-13"
     }
   ]
 }
