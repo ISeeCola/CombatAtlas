@@ -571,9 +571,9 @@
       "publicationStatus": "published",
       "id": "tencent-group-ai",
       "title": "AI 设计的若干规则：集团 AI",
-      "author": "腾讯游戏学堂作者",
-      "publisher": "腾讯游戏学堂",
-      "url": "https://gwb.tencent.com/community/detail/105183",
+      "author": "彼岸无风",
+      "publisher": "GameRes 游资网",
+      "url": "https://www.gameres.com/491742.html",
       "year": 2016,
       "language": "中文",
       "medium": "文章",
@@ -714,10 +714,10 @@
       "publicationStatus": "published",
       "id": "dreamscaper-combat",
       "title": "《Dreamscaper》：独立预算下的高质量战斗",
-      "originalTitle": "'Dreamscaper': Killer Combat on an Indie Budget",
+      "originalTitle": "Dreamscaper': Killer Combat on an Indie Budget",
       "author": "Ian Cofino",
-      "publisher": "GDC Vault",
-      "url": "https://www.gdcvault.com/play/1027585/-Dreamscaper-Killer-Combat-on",
+      "publisher": "Game Developers Conference / YouTube",
+      "url": "https://www.youtube.com/watch?v=3Omb5exWpd4",
       "year": 2022,
       "language": "英文",
       "medium": "演讲",
@@ -890,8 +890,8 @@
       "title": "游戏感：为什么你的死亡动画不够好",
       "originalTitle": "Game Feel: Why Your Death Animation Sucks",
       "author": "Nicolae Berbece",
-      "publisher": "GDC Europe",
-      "url": "https://www.gdcvault.com/play/1022759/Game-Feel-Why-Your-Death",
+      "publisher": "Game Developers Conference / YouTube",
+      "url": "https://www.youtube.com/watch?v=pmSAG51BybY",
       "year": 2015,
       "language": "英文",
       "medium": "演讲",
@@ -1085,6 +1085,94 @@
       "curatorScore": 5,
       "featured": false,
       "addedAt": "2026-09-13"
+    },
+    {
+      "publicationStatus": "published",
+      "id": "src-20260914111243-fb5b25f0",
+      "title": "《对马岛之魂》近战系统：武士刀大师",
+      "originalTitle": "Master of the Katana: Melee Combat in 'Ghost of Tsushima'",
+      "author": "Chris Zimmerman / Sucker Punch Productions",
+      "publisher": "GDC 官方 YouTube",
+      "url": "https://www.youtube.com/watch?v=1ih5BxnJu2I",
+      "year": 2021,
+      "language": "英文",
+      "medium": "视频",
+      "tier": "一手",
+      "topics": [
+        "角色3C",
+        "技能",
+        "手感",
+        "打击感",
+        "基础理论"
+      ],
+      "summary": "Chris Zimmerman 复盘《对马岛之魂》武士刀近战系统的设计与迭代，重点覆盖攻击机制、技术实现、玩家反馈以及人体操作能力对战斗规则的约束。当前条目依据官方完整视频及场次资料完成短读，细节结论仍待人工深读复核。",
+      "takeaways": [
+        "把战斗机制的设计目标、技术约束和玩家实际操作能力放在同一迭代框架中。",
+        "通过持续试玩验证攻击、应对与反馈是否共同支撑武士幻想。",
+        "记录失败方案及其原因，避免只保留最终规则而丢失设计边界。"
+      ],
+      "readingTime": 50,
+      "curatorScore": 5,
+      "featured": false,
+      "addedAt": "2026-09-14"
+    },
+    {
+      "publicationStatus": "published",
+      "id": "src-20260914111243-13283bab",
+      "title": "《神秘海域4》战斗 AI：人工编排与系统行为的平衡",
+      "originalTitle": "Authored vs. Systemic: Finding a Balance for Combat AI in Uncharted 4",
+      "author": "Matthew Gallant / Naughty Dog",
+      "publisher": "GDC 官方 YouTube",
+      "url": "https://www.youtube.com/watch?v=G8W7EQKBgcg",
+      "year": 2017,
+      "language": "英文",
+      "medium": "视频",
+      "tier": "一手",
+      "topics": [
+        "怪物AI",
+        "遭遇战",
+        "玩法规则",
+        "基础理论"
+      ],
+      "summary": "Matthew Gallant 以《神秘海域4》为例，拆解大空间遭遇战中人工编排与系统 AI 的分工，涉及战斗角色、位置选择、全局协调参数和面向设计师的控制边界。当前条目依据官方完整视频和场次信息完成短读，方法细节仍待人工深读。",
+      "takeaways": [
+        "将必须稳定呈现的战斗节拍与可系统涌现的敌人行为明确分层。",
+        "用战斗角色和全局协调参数组织多个敌人的行动，避免各自最优导致群体失控。",
+        "把 AI 控制权划分为设计师可编排部分与工程系统部分，并为两者建立清晰接口。"
+      ],
+      "readingTime": 57,
+      "curatorScore": 5,
+      "featured": false,
+      "addedAt": "2026-09-14"
+    },
+    {
+      "publicationStatus": "published",
+      "id": "src-20260914111243-aae8e07f",
+      "title": "《DOOM》敌人表现：战斗 AI 与全身动画协同",
+      "originalTitle": "Bringing Hell to Life: AI and Full Body Animation in DOOM",
+      "author": "Jake Campbell / id Software",
+      "publisher": "GDC 官方 YouTube",
+      "url": "https://www.youtube.com/watch?v=3lO1q8mQrrg",
+      "year": 2017,
+      "language": "英文",
+      "medium": "视频",
+      "tier": "一手",
+      "topics": [
+        "怪物AI",
+        "怪物设计",
+        "打击感",
+        "基础理论"
+      ],
+      "summary": "Jake Campbell 介绍《DOOM》如何让战斗 AI 与全身动画系统协同，使敌人的移动、攻击和受击表现既服从玩法意图又保持角色可信度。当前条目依据 GDC 官方视频与简介完成短读，具体动画控制技术仍待人工深读。",
+      "takeaways": [
+        "将敌人动画视为战斗 AI 的表达层，而不是独立于决策系统的视觉包装。",
+        "为高风格化敌人建立比简单动画播放更稳健、灵活的全身控制机制。",
+        "以玩法可读性和敌人个性共同检验 AI 动作选择。"
+      ],
+      "readingTime": 60,
+      "curatorScore": 5,
+      "featured": false,
+      "addedAt": "2026-09-14"
     }
   ]
 }
