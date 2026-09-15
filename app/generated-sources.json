@@ -1173,6 +1173,97 @@
       "curatorScore": 5,
       "featured": false,
       "addedAt": "2026-09-14"
+    },
+    {
+      "publicationStatus": "published",
+      "id": "src-20260915135659-82fe86df",
+      "title": "《鬼泣5》：从目标情绪反推卓越动作体验",
+      "originalTitle": "Devil May Cry 5: Creating a Standout Action Game",
+      "author": "Hideaki Itsuno / Michiteru Okabe / Matt Walker",
+      "publisher": "GDC 官方 YouTube",
+      "url": "https://www.youtube.com/watch?v=CWi5gjxdh4o",
+      "year": 2019,
+      "language": "英文",
+      "medium": "视频",
+      "tier": "一手",
+      "topics": [
+        "角色3C",
+        "技能",
+        "手感",
+        "打击感",
+        "基础理论"
+      ],
+      "summary": "Capcom 团队以《鬼泣5》为例，说明如何先定义希望玩家获得的情绪与愿景，再倒推角色能力、动作表现和具体玩法规则。当前条目依据 GDC 官方完整视频与场次简介完成短读，细节结论仍待人工深读复核。",
+      "takeaways": [
+        "先定义目标玩家体验和情绪，再反推需要的玩法与表现。",
+        "把抽象愿景落实为可观察、可试玩的动作体验要素。",
+        "用角色差异和具体战斗表现共同支撑作品的动作辨识度。"
+      ],
+      "readingTime": 60,
+      "curatorScore": 5,
+      "featured": false,
+      "addedAt": "2026-09-15"
+    },
+    {
+      "publicationStatus": "published",
+      "id": "src-20260915135659-013787fd",
+      "title": "《对马岛之魂》致死性契约：武士幻想与战斗平衡",
+      "originalTitle": "Honoring the Blade: Lethality and Combat Balance in 'Ghost of Tsushima'",
+      "author": "Theodore Fishman / Sucker Punch Productions",
+      "publisher": "GDC 官方 YouTube",
+      "url": "https://www.youtube.com/watch?v=dKS2kaI3aXEc",
+      "year": 2021,
+      "language": "英文",
+      "medium": "视频",
+      "tier": "一手",
+      "topics": [
+        "技能",
+        "资源循环",
+        "怪物设计",
+        "遭遇战",
+        "玩法规则"
+      ],
+      "summary": "Theodore Fishman 复盘《对马岛之魂》如何建立“致死性契约”，在低击杀次数的武士幻想、敌人防御行为、玩家成长、难度与决斗时长之间取得平衡。当前条目已依据官方完整视频、场次简介与演讲材料完成短读。",
+      "takeaways": [
+        "先把玩家幻想转译成可检验的致死性契约，再围绕契约调整系统。",
+        "优先通过敌人防御、攻击节奏和玩家应对窗口增加难度，生命值是较后的手段。",
+        "对决斗等特殊场景允许有目的地弯折契约，但要保留节奏分段和感知一致性。",
+        "结合试玩感受与数据判断平衡问题，避免只依赖单一指标。"
+      ],
+      "readingTime": 25,
+      "curatorScore": 5,
+      "featured": false,
+      "addedAt": "2026-09-15"
+    },
+    {
+      "publicationStatus": "published",
+      "id": "src-20260915135659-55ccb8ab",
+      "title": "战斗音频编排：用声音提高战况理解",
+      "originalTitle": "Audio Bootcamp XVI: Fighting Legos: Audio Choreography for Battle Design",
+      "author": "Khris Brown / KBA Voice",
+      "publisher": "GDC 官方 YouTube",
+      "url": "https://www.youtube.com/watch?v=CdmlxeJ-3gM",
+      "year": 2017,
+      "language": "英文",
+      "medium": "视频",
+      "tier": "一手",
+      "topics": [
+        "手感",
+        "打击感",
+        "怪物设计",
+        "遭遇战",
+        "基础理论"
+      ],
+      "summary": "Khris Brown 讨论战斗音频如何从避免重复的声音集合，发展为与输入和定制动画协同的反馈编排，帮助玩家在高压战斗中理解正在发生的事件。当前条目依据 GDC 官方完整视频与场次简介完成短读，实施细节仍待人工复核。",
+      "takeaways": [
+        "把音频作为战斗信息通道，补足视觉和触觉反馈无法同时覆盖的状态。",
+        "让语音、动作声音和动画时序协同，帮助玩家理解攻击与受伤结果。",
+        "在保持变化性的同时控制重复疲劳，避免声音集合削弱信息辨识。"
+      ],
+      "readingTime": 30,
+      "curatorScore": 4,
+      "featured": false,
+      "addedAt": "2026-09-15"
     }
   ]
 }
